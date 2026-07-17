@@ -1,6 +1,6 @@
 # resilience
 
-![resilience banner](doc/banner.png)
+![resilience banner](https://raw.githubusercontent.com/Yusufihsangorgel/resilience/main/doc/banner.png)
 
 Retry with backoff and jitter, circuit breaker, timeout, rate limiter, and
 bulkhead policies for reliable async operations. Zero dependencies.

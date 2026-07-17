@@ -4,10 +4,11 @@ description: >-
   and bulkhead policies for reliable async operations. Zero dependencies.
 version: 0.1.0
 repository: https://github.com/Yusufihsangorgel/resilience
+issue_tracker: https://github.com/Yusufihsangorgel/resilience/issues
 topics:
   - retry
   - circuit-breaker
-  - resilience
+  - bulkhead
   - rate-limiting
   - fault-tolerance
 
