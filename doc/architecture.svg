@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="420" viewBox="0 0 1100 420" font-family="Menlo, monospace">
+  <defs><marker id="a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#38BDF8"/></marker>
+  <marker id="g" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#64748B"/></marker></defs>
+  <rect width="1100" height="420" fill="#0B1220"/>
+  <text x="48" y="48" font-size="22" font-weight="bold" fill="#E2E8F0">Policies wrap the action</text>
+  <text x="48" y="74" font-size="14" fill="#94A3B8">Each policy wraps an async action and returns one. Nest them in whatever order fits.</text>
+
+  <!-- concentric onion layers -->
+  <rect x="300" y="110" width="500" height="270" rx="14" fill="none" stroke="#1E3A5F" stroke-width="1.5"/>
+  <text x="316" y="132" font-size="14" fill="#94A3B8">Retry</text>
+  <rect x="340" y="150" width="420" height="200" rx="12" fill="none" stroke="#274b73" stroke-width="1.5"/>
+  <text x="356" y="172" font-size="14" fill="#94A3B8">CircuitBreaker</text>
+  <rect x="380" y="190" width="340" height="130" rx="10" fill="none" stroke="#2f5c8c" stroke-width="1.5"/>
+  <text x="396" y="212" font-size="14" fill="#94A3B8">RateLimiter</text>
+  <rect x="420" y="228" width="260" height="60" rx="8" fill="none" stroke="#356aa3" stroke-width="1.5"/>
+  <text x="436" y="246" font-size="13" fill="#94A3B8">Timeout</text>
+  <rect x="500" y="236" width="150" height="44" rx="8" fill="#0E2438" stroke="#38BDF8" stroke-width="2"/>
+  <text x="575" y="263" font-size="14" fill="#38BDF8" text-anchor="middle">your action</text>
+
+  <!-- call in / result out -->
+  <path d="M90 235 L498 235" stroke="#38BDF8" stroke-width="2" fill="none" marker-end="url(#a)"/>
+  <text x="90" y="222" font-size="13" fill="#38BDF8">run()</text>
+  <path d="M650 278 L200 278 L90 275" stroke="#64748B" stroke-width="2" fill="none" marker-end="url(#g)"/>
+  <text x="90" y="298" font-size="13" fill="#94A3B8">result or error</text>
+
+  <text x="850" y="200" font-size="13.5" fill="#94A3B8">Bulkhead also caps how many</text>
+  <text x="850" y="220" font-size="13.5" fill="#94A3B8">actions run at once, from</text>
+  <text x="850" y="240" font-size="13.5" fill="#94A3B8">outside the wrap.</text>
+</svg>

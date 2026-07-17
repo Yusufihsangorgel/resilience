@@ -16,6 +16,8 @@ abstract interface class Policy {
 ```
 
 Every policy wraps an async action. Policies compose through
+
+![Policies wrap the action, composing as nested layers](https://raw.githubusercontent.com/Yusufihsangorgel/resilience/main/doc/architecture.png)
 `ResiliencePipeline`, and the whole package has no dependencies outside the
 Dart SDK.
 
