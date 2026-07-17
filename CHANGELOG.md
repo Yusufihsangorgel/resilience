@@ -1,3 +1,7 @@
+## 0.1.1
+
+- Docs: tightened the README wording and visuals.
+
 ## 0.1.0
 
 Initial release.
