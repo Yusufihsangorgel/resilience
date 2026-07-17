@@ -11,10 +11,12 @@ void main() {
         const timeout = Timeout(Duration(seconds: 1));
         Object? result;
         unawaited(
-          timeout.execute(() async {
-            await Future<void>.delayed(const Duration(milliseconds: 500));
-            return 'fast enough';
-          }).then((value) => result = value),
+          timeout
+              .execute(() async {
+                await Future<void>.delayed(const Duration(milliseconds: 500));
+                return 'fast enough';
+              })
+              .then((value) => result = value),
         );
         async.elapse(const Duration(milliseconds: 500));
         expect(result, 'fast enough');
@@ -27,12 +29,14 @@ void main() {
         final never = Completer<String>();
         Object? error;
         unawaited(
-          timeout.execute(() => never.future).then<void>(
-            (_) {},
-            onError: (Object e) {
-              error = e;
-            },
-          ),
+          timeout
+              .execute(() => never.future)
+              .then<void>(
+                (_) {},
+                onError: (Object e) {
+                  error = e;
+                },
+              ),
         );
         async.elapse(const Duration(milliseconds: 999));
         expect(error, isNull);
@@ -47,12 +51,14 @@ void main() {
         final late = Completer<String>();
         Object? error;
         unawaited(
-          timeout.execute(() => late.future).then<void>(
-            (_) {},
-            onError: (Object e) {
-              error = e;
-            },
-          ),
+          timeout
+              .execute(() => late.future)
+              .then<void>(
+                (_) {},
+                onError: (Object e) {
+                  error = e;
+                },
+              ),
         );
         async.elapse(const Duration(seconds: 1));
         expect(error, isA<TimeoutException>());
@@ -69,18 +75,33 @@ void main() {
         const timeout = Timeout(Duration(seconds: 1));
         Object? error;
         unawaited(
-          timeout.execute<void>(() async {
-            throw const FormatException('boom');
-          }).then<void>(
-            (_) {},
-            onError: (Object e) {
-              error = e;
-            },
-          ),
+          timeout
+              .execute<void>(() async {
+                throw const FormatException('boom');
+              })
+              .then<void>(
+                (_) {},
+                onError: (Object e) {
+                  error = e;
+                },
+              ),
         );
         async.flushMicrotasks();
         expect(error, isFormatException);
       });
+    });
+
+    test('rejects a non-positive duration at execute time', () async {
+      var calls = 0;
+      await expectLater(
+        const Timeout(Duration.zero).execute(() async => calls++),
+        throwsArgumentError,
+      );
+      await expectLater(
+        const Timeout(Duration(seconds: -1)).execute(() async => calls++),
+        throwsArgumentError,
+      );
+      expect(calls, 0);
     });
   });
 }

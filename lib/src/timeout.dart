@@ -16,6 +16,10 @@ import 'policy.dart';
 /// ```
 final class Timeout implements Policy {
   /// Creates a timeout policy that waits at most [duration].
+  ///
+  /// [duration] must be positive. Duration comparisons cannot run in a
+  /// const constructor assert, so [execute] performs the check and throws
+  /// an [ArgumentError] for a non-positive duration.
   const Timeout(this.duration);
 
   /// The maximum time to wait for the action to complete.
@@ -23,6 +27,9 @@ final class Timeout implements Policy {
 
   @override
   Future<T> execute<T>(Future<T> Function() action) async {
+    if (duration <= Duration.zero) {
+      throw ArgumentError.value(duration, 'duration', 'must be positive');
+    }
     return action().timeout(duration);
   }
 }

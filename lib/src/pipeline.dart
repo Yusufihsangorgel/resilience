@@ -25,7 +25,7 @@ final class ResiliencePipeline implements Policy {
   /// The list is copied; later changes to it do not affect the pipeline.
   /// An empty list produces a pipeline that runs actions unchanged.
   ResiliencePipeline(List<Policy> policies)
-      : _policies = List.unmodifiable(policies);
+    : _policies = List.unmodifiable(policies);
 
   final List<Policy> _policies;
 

@@ -136,44 +136,46 @@ void main() {
       expect(await breaker.execute(() async => 'ok'), 'ok');
     });
 
-    test('allows exactly one trial when concurrent calls hit half-open',
-        () async {
-      final breaker = CircuitBreaker(
-        failureThreshold: 1,
-        resetTimeout: const Duration(seconds: 30),
-        now: clock.call,
-      );
-      await expectLater(breaker.execute(_fail), throwsFormatException);
-      clock.advance(const Duration(seconds: 31));
+    test(
+      'allows exactly one trial when concurrent calls hit half-open',
+      () async {
+        final breaker = CircuitBreaker(
+          failureThreshold: 1,
+          resetTimeout: const Duration(seconds: 30),
+          now: clock.call,
+        );
+        await expectLater(breaker.execute(_fail), throwsFormatException);
+        clock.advance(const Duration(seconds: 31));
 
-      final trialGate = Completer<String>();
-      var started = 0;
-      final futures = List.generate(5, (_) {
-        return breaker.execute(() {
-          started++;
-          return trialGate.future;
+        final trialGate = Completer<String>();
+        var started = 0;
+        final futures = List.generate(5, (_) {
+          return breaker.execute(() {
+            started++;
+            return trialGate.future;
+          });
         });
-      });
 
-      trialGate.complete('ok');
-      final outcomes = await Future.wait(
-        futures.map(
-          (future) => future.then<Object>(
-            (value) => value,
-            onError: (Object error) => error,
+        trialGate.complete('ok');
+        final outcomes = await Future.wait(
+          futures.map(
+            (future) => future.then<Object>(
+              (value) => value,
+              onError: (Object error) => error,
+            ),
           ),
-        ),
-      );
+        );
 
-      expect(started, 1);
-      expect(outcomes.where((o) => o == 'ok'), hasLength(1));
-      expect(outcomes.whereType<CircuitOpenException>(), hasLength(4));
-      expect(
-        outcomes.whereType<CircuitOpenException>().map((e) => e.retryAfter),
-        everyElement(Duration.zero),
-      );
-      expect(breaker.state, CircuitState.closed);
-    });
+        expect(started, 1);
+        expect(outcomes.where((o) => o == 'ok'), hasLength(1));
+        expect(outcomes.whereType<CircuitOpenException>(), hasLength(4));
+        expect(
+          outcomes.whereType<CircuitOpenException>().map((e) => e.retryAfter),
+          everyElement(Duration.zero),
+        );
+        expect(breaker.state, CircuitState.closed);
+      },
+    );
 
     test('does not count errors for which countAs returns false', () async {
       final breaker = CircuitBreaker(

@@ -7,7 +7,7 @@ Initial release.
 - `CircuitBreaker` with consecutive failure threshold, lazy reset timeout,
   single half-open trial, `countAs` filter, and `onStateChange` hook.
 - `Timeout` built on `Future.timeout`.
-- `RateLimiter`: token bucket with steady refill, FIFO waiting, and an
-  optional queue bound.
+- `RateLimiter`: token bucket with steady refill, FIFO waiting, an
+  optional queue bound, and `dispose`.
 - `Bulkhead`: concurrency limit with a bounded FIFO queue.
 - `ResiliencePipeline` for composing policies, outermost first.

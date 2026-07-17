@@ -48,6 +48,15 @@ final class CircuitOpenException implements Exception {
 ///   [CircuitOpenException] while the trial is in flight. A successful
 ///   trial closes the breaker; a counted failure reopens it.
 ///
+/// A half-open trial that never settles keeps the breaker half-open and
+/// rejecting every other call indefinitely. Wrap the action in a `Timeout`
+/// inside the breaker so the trial always settles, as in the package
+/// example.
+///
+/// The reset timeout is measured with the wall clock ([DateTime.now] by
+/// default), so system clock jumps can shorten or extend the open period.
+/// A monotonic time source is planned for 0.2.
+///
 /// ```dart
 /// final breaker = CircuitBreaker(failureThreshold: 3);
 /// final data = await breaker.execute(() => queryReplica());
@@ -65,6 +74,8 @@ final class CircuitBreaker implements Policy {
   /// breaker. When null, every error counts.
   ///
   /// [onStateChange] is called with the new state on every transition.
+  /// The callback must not throw: an error thrown from it propagates to
+  /// the caller in place of the call's own outcome.
   ///
   /// [now] supplies the current time and defaults to [DateTime.now]. Pass
   /// a fake clock in tests to control the reset timeout.
@@ -74,9 +85,9 @@ final class CircuitBreaker implements Policy {
     bool Function(Object error)? countAs,
     void Function(CircuitState state)? onStateChange,
     DateTime Function()? now,
-  })  : _countAs = countAs,
-        _onStateChange = onStateChange,
-        _now = now ?? DateTime.now {
+  }) : _countAs = countAs,
+       _onStateChange = onStateChange,
+       _now = now ?? DateTime.now {
     if (failureThreshold < 1) {
       throw ArgumentError.value(
         failureThreshold,

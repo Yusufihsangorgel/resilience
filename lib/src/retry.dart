@@ -10,6 +10,7 @@ final class RetryEvent {
   const RetryEvent({
     required this.attempt,
     required this.error,
+    required this.stackTrace,
     required this.nextDelay,
   });
 
@@ -18,6 +19,9 @@ final class RetryEvent {
 
   /// The error thrown by the failed attempt.
   final Object error;
+
+  /// The stack trace of [error].
+  final StackTrace stackTrace;
 
   /// The delay before the next attempt starts.
   final Duration nextDelay;
@@ -52,16 +56,21 @@ final class Retry implements Policy {
   ///
   /// [onRetry] is called before each delay with a [RetryEvent] describing
   /// the failed attempt. It is not called for the final failed attempt.
+  /// The callback must not throw: an error thrown from it replaces the
+  /// action's error and ends the retry loop.
   Retry({
     this.maxAttempts = 3,
     this.backoff = const Backoff.none(),
     bool Function(Object error)? retryIf,
     void Function(RetryEvent event)? onRetry,
-  })  : _retryIf = retryIf,
-        _onRetry = onRetry {
+  }) : _retryIf = retryIf,
+       _onRetry = onRetry {
     if (maxAttempts < 1) {
       throw ArgumentError.value(
-          maxAttempts, 'maxAttempts', 'must be at least 1');
+        maxAttempts,
+        'maxAttempts',
+        'must be at least 1',
+      );
     }
   }
 
@@ -76,17 +85,22 @@ final class Retry implements Policy {
 
   @override
   Future<T> execute<T>(Future<T> Function() action) async {
-    for (var attempt = 1;; attempt++) {
+    for (var attempt = 1; ; attempt++) {
       try {
         return await action();
-      } catch (error) {
+      } catch (error, stackTrace) {
         final retryIf = _retryIf;
         if (attempt >= maxAttempts || (retryIf != null && !retryIf(error))) {
           rethrow;
         }
         final nextDelay = backoff.delay(attempt);
         _onRetry?.call(
-          RetryEvent(attempt: attempt, error: error, nextDelay: nextDelay),
+          RetryEvent(
+            attempt: attempt,
+            error: error,
+            stackTrace: stackTrace,
+            nextDelay: nextDelay,
+          ),
         );
         if (nextDelay > Duration.zero) {
           await Future<void>.delayed(nextDelay);

@@ -37,6 +37,10 @@ final class RateLimitExceededException implements Exception {
 /// A limiter is stateful: create one instance per rate-limited resource and
 /// share it between all callers of that resource.
 ///
+/// The refill timer runs until the bucket is full again, up to [per] after
+/// the most recent call, and keeps the isolate alive while it runs. Call
+/// [dispose] to stop it earlier, for example between tests or on shutdown.
+///
 /// ```dart
 /// final limiter = RateLimiter(maxPermits: 10, per: Duration(seconds: 1));
 /// final result = await limiter.execute(() => callThirdPartyApi());
@@ -92,14 +96,38 @@ final class RateLimiter implements Policy {
   int _tokens;
   final Queue<Completer<void>> _waiters = Queue<Completer<void>>();
   Timer? _refillTimer;
+  bool _disposed = false;
 
   /// The number of calls currently waiting for a token.
   int get queueLength => _waiters.length;
 
   @override
   Future<T> execute<T>(Future<T> Function() action) async {
+    if (_disposed) {
+      throw StateError('RateLimiter disposed');
+    }
     await _acquire();
     return action();
+  }
+
+  /// Cancels the refill timer and fails all waiting calls.
+  ///
+  /// Waiting calls complete with a [StateError], and after disposal
+  /// [execute] throws a [StateError] without running the action. Calling
+  /// dispose again has no effect.
+  ///
+  /// Disposal is optional: without it the refill timer stops on its own
+  /// once the bucket is full, at most [per] after the last call.
+  void dispose() {
+    if (_disposed) {
+      return;
+    }
+    _disposed = true;
+    _refillTimer?.cancel();
+    _refillTimer = null;
+    while (_waiters.isNotEmpty) {
+      _waiters.removeFirst().completeError(StateError('RateLimiter disposed'));
+    }
   }
 
   Future<void> _acquire() {

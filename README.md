@@ -4,7 +4,7 @@ Retry with backoff and jitter, circuit breaker, timeout, rate limiter, and
 bulkhead policies for reliable async operations. Zero dependencies.
 
 Network calls fail, dependencies slow down, and third-party APIs throttle.
-This package packages the standard answers to those problems as small,
+This package provides the standard answers to those problems as small,
 composable policy objects with one shared interface:
 
 ```dart
@@ -37,6 +37,8 @@ dart pub add resilience
 ## Retry
 
 ```dart
+import 'dart:async';
+
 import 'package:resilience/resilience.dart';
 
 final retry = Retry(
@@ -178,6 +180,12 @@ wraps the rate limiter, which gates the action. Order matters:
   attempts.
 - Breaker outside the retry: one fully exhausted retry counts as a single
   failure toward opening the circuit.
+
+To put a total time budget on the whole retried operation, place a
+`Timeout` outside the `Retry`, as in
+`ResiliencePipeline([Timeout(total), Retry(...), ...])`. When the breaker
+wraps a `Timeout`, each `TimeoutException` counts as a failure toward
+opening the circuit unless `countAs` filters it out.
 
 A pipeline is itself a `Policy`, so pipelines can be nested and shared.
 See `example/resilience_example.dart` for a complete program.

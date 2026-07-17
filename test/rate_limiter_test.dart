@@ -94,10 +94,9 @@ void main() {
         final errors = <Object>[];
         for (var i = 0; i < 3; i++) {
           unawaited(
-            limiter.execute(() async => started++).then<void>(
-                  (_) {},
-                  onError: errors.add,
-                ),
+            limiter
+                .execute(() async => started++)
+                .then<void>((_) {}, onError: errors.add),
           );
         }
         async.flushMicrotasks();
@@ -122,12 +121,14 @@ void main() {
         Object? error;
         unawaited(limiter.execute(() async => 'first'));
         unawaited(
-          limiter.execute(() async => 'second').then<void>(
-            (_) {},
-            onError: (Object e) {
-              error = e;
-            },
-          ),
+          limiter
+              .execute(() async => 'second')
+              .then<void>(
+                (_) {},
+                onError: (Object e) {
+                  error = e;
+                },
+              ),
         );
         async.flushMicrotasks();
         expect(error, isA<RateLimitExceededException>());
@@ -166,10 +167,12 @@ void main() {
         );
         var started = 0;
         unawaited(
-          limiter.execute<void>(() async {
-            started++;
-            throw const FormatException('boom');
-          }).then<void>((_) {}, onError: (Object _) {}),
+          limiter
+              .execute<void>(() async {
+                started++;
+                throw const FormatException('boom');
+              })
+              .then<void>((_) {}, onError: (Object _) {}),
         );
         unawaited(limiter.execute(() async => started++));
         async.flushMicrotasks();
@@ -177,6 +180,67 @@ void main() {
         async.elapse(const Duration(milliseconds: 100));
         expect(started, 2);
       });
+    });
+
+    test('dispose cancels the refill timer', () {
+      fakeAsync((async) {
+        final limiter = RateLimiter(
+          maxPermits: 1,
+          per: const Duration(milliseconds: 100),
+        );
+        unawaited(limiter.execute(() async => 1));
+        async.flushMicrotasks();
+        expect(async.periodicTimerCount, 1);
+        limiter.dispose();
+        expect(async.periodicTimerCount, 0);
+      });
+    });
+
+    test('dispose fails waiting calls with a StateError', () {
+      fakeAsync((async) {
+        final limiter = RateLimiter(
+          maxPermits: 1,
+          per: const Duration(milliseconds: 100),
+        );
+        unawaited(limiter.execute(() async => 'running'));
+        Object? error;
+        unawaited(
+          limiter
+              .execute(() async => 'queued')
+              .then<void>(
+                (_) {},
+                onError: (Object e) {
+                  error = e;
+                },
+              ),
+        );
+        async.flushMicrotasks();
+        expect(error, isNull);
+        limiter.dispose();
+        async.flushMicrotasks();
+        expect(error, isStateError);
+        expect(limiter.queueLength, 0);
+      });
+    });
+
+    test('execute after dispose throws a StateError', () async {
+      final limiter = RateLimiter(
+        maxPermits: 1,
+        per: const Duration(seconds: 1),
+      );
+      limiter.dispose();
+      var calls = 0;
+      await expectLater(limiter.execute(() async => calls++), throwsStateError);
+      expect(calls, 0);
+    });
+
+    test('dispose is idempotent', () {
+      final limiter = RateLimiter(
+        maxPermits: 1,
+        per: const Duration(seconds: 1),
+      );
+      limiter.dispose();
+      expect(limiter.dispose, returnsNormally);
     });
 
     test('rejects invalid arguments', () {
@@ -189,10 +253,7 @@ void main() {
         throwsArgumentError,
       );
       expect(
-        () => RateLimiter(
-          maxPermits: 10,
-          per: const Duration(microseconds: 5),
-        ),
+        () => RateLimiter(maxPermits: 10, per: const Duration(microseconds: 5)),
         throwsArgumentError,
       );
       expect(

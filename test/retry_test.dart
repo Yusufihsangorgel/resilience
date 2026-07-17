@@ -95,6 +95,7 @@ void main() {
       expect(events[0].attempt, 1);
       expect(events[1].attempt, 2);
       expect(events[0].error, isFormatException);
+      expect(events[0].stackTrace.toString(), isNotEmpty);
       expect(events[0].nextDelay, Duration.zero);
       expect(events[0].toString(), contains('attempt: 1'));
     });
@@ -110,13 +111,15 @@ void main() {
           ),
         );
         unawaited(
-          retry.execute(() async {
-            calls++;
-            if (calls < 3) {
-              throw const FormatException('not yet');
-            }
-            return 'done';
-          }).then((value) => result = value),
+          retry
+              .execute(() async {
+                calls++;
+                if (calls < 3) {
+                  throw const FormatException('not yet');
+                }
+                return 'done';
+              })
+              .then((value) => result = value),
         );
 
         async.flushMicrotasks();
