@@ -1,37 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400">
-  <defs>
-    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
-      <circle cx="12" cy="12" r="1.5" fill="#E2E8F0" fill-opacity="0.05"/>
-    </pattern>
-  </defs>
-
-  <!-- background -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400" font-family="Menlo, monospace">
   <rect width="1200" height="400" fill="#0B1220"/>
-  <rect width="1200" height="400" fill="url(#dots)"/>
-
-  <!-- type lockup, lower left -->
-  <rect x="66" y="200" width="44" height="6" fill="#38BDF8"/>
-  <text x="64" y="292" font-family="Menlo, monospace" font-size="64" font-weight="bold" fill="#E2E8F0">resilience</text>
-  <text x="66" y="338" font-family="Menlo, monospace" font-size="24" fill="#94A3B8">Retry, circuit breaker, timeout, rate limiter</text>
-
-  <!-- motif: half-open circuit breaker + backoff envelope over retry dots -->
-  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <!-- circuit: wire in, open lever, wire out -->
-    <path d="M 820 160 L 896 160" stroke="#1E3A5F" stroke-width="3"/>
-    <path d="M 1004 160 L 1080 160" stroke="#1E3A5F" stroke-width="3"/>
-    <circle cx="900" cy="160" r="6" fill="#0B1220" stroke="#38BDF8" stroke-width="3"/>
-    <circle cx="1000" cy="160" r="6" fill="#0B1220" stroke="#38BDF8" stroke-width="3"/>
-    <!-- half-open lever -->
-    <path d="M 905 156 L 986 104" stroke="#38BDF8" stroke-width="3"/>
-    <!-- swing arc from lever tip toward the closed position -->
-    <path d="M 990 110 C 1004 122 1008 140 1002 152" stroke="#1E3A5F" stroke-width="3" stroke-dasharray="2 10"/>
-
-    <!-- retry timeline with backoff envelope -->
-    <path d="M 850 290 L 1090 290" stroke="#1E3A5F" stroke-width="3" stroke-dasharray="1 12"/>
-    <path d="M 880 282 L 880 226 M 972 282 L 972 259 M 1040 282 L 1040 273" stroke="#1E3A5F" stroke-width="3"/>
-    <path d="M 856 216 C 902 224 946 244 972 256 C 996 264 1030 271 1084 275" stroke="#1E3A5F" stroke-width="3"/>
-    <circle cx="880" cy="290" r="6" fill="#38BDF8"/>
-    <circle cx="972" cy="290" r="6" fill="#38BDF8"/>
-    <circle cx="1040" cy="290" r="6" fill="#38BDF8"/>
+  <g fill="none" opacity="0.9">
+    <rect x="800" y="120" width="240" height="160" rx="14" stroke="#1E3A5F"/>
+    <rect x="828" y="146" width="184" height="108" rx="11" stroke="#274b73"/>
+    <rect x="856" y="172" width="128" height="56" rx="8" stroke="#2f5c8c"/>
+    <rect x="888" y="186" width="64" height="28" rx="6" fill="#0E2438" stroke="#38BDF8"/>
+    <text x="812" y="140" font-size="11" fill="#64748B">Retry</text>
+    <text x="838" y="166" font-size="11" fill="#64748B">CircuitBreaker</text>
+    <text x="866" y="190" font-size="11" fill="#64748B">Timeout</text>
+    <text x="920" y="204" font-size="10.5" fill="#38BDF8" text-anchor="middle">call</text>
   </g>
+  <text x="64" y="212" font-size="56" font-weight="bold" fill="#E2E8F0">resilience</text>
+  <text x="66" y="256" font-size="23" fill="#94A3B8">Retry, circuit breaker, rate limiter, bulkhead</text>
 </svg>
