@@ -1,3 +1,10 @@
+## 0.2.1
+
+- Declare the diagram in `pubspec.yaml` so pub.dev renders it on the package
+  page. It was already in the repository and the README, but pub.dev shows only
+  what the `screenshots:` field points at, so the page opened with prose where
+  the picture should have been.
+
 ## 0.2.0
 
 - Add `Hedge`, which starts a second copy of a slow call rather than waiting
