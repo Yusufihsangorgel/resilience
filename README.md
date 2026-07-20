@@ -64,7 +64,8 @@ final data = await retry.execute(() => fetchData());
 
 `maxAttempts` counts the first attempt, so `maxAttempts: 4` means one
 initial call plus up to three retries. When `retryIf` is omitted, every
-error is retried. The last attempt rethrows the original error.
+error is retried except `CircuitOpenException` (see below). The last attempt
+rethrows the original error.
 
 Backoff strategies:
 
@@ -227,9 +228,25 @@ final user = await pipeline.execute(() => fetchUser(id));
 This reads as: the retry wraps the breaker, which wraps the timeout, which
 wraps the rate limiter, which gates the action. Order matters:
 
-- Retry outside the breaker: the breaker's own `CircuitOpenException` is
-  retried too, which gives the breaker a chance to half-open between
-  attempts.
+- Retry outside the breaker: once the breaker opens, the retry stops.
+  A `CircuitOpenException` is thrown without the action being called, so
+  further attempts would spend the budget, and sleep through the backoff,
+  on calls that are never made. Only time reopens a circuit.
+
+  If you want the opposite, supply `retryIf` and let the exception through:
+
+  ```dart
+  Retry(
+    maxAttempts: 3,
+    backoff: Backoff.fixed(const Duration(seconds: 20)),
+    retryIf: (error) => true,
+  )
+  ```
+
+  That is worth doing only when the backoff can outlast the breaker's
+  `resetTimeout` (30 s by default), so a later attempt arrives after the
+  circuit is willing to half-open. With the usual sub-second backoffs it
+  cannot, which is why it is not the default.
 - Breaker outside the retry: one fully exhausted retry counts as a single
   failure toward opening the circuit.
 

@@ -1,3 +1,22 @@
+## 0.3.0
+
+- **Behaviour change:** `Retry` no longer retries `CircuitOpenException` by
+  default. A breaker throws it without calling the action, so a retry wrapped
+  around a breaker used to spend its whole budget, and sleep through every
+  backoff delay, on calls that were never made. Measured in the new test: with
+  `maxAttempts: 10` and a breaker that opens after 3 failures, the old default
+  ran 9 retries for 3 real calls; it now runs 3 and stops.
+  The old behaviour had one real use, which is why it was the default: if the
+  backoff can outlast the breaker's `resetTimeout`, a later attempt arrives
+  after the circuit is willing to half-open. That needs delays of tens of
+  seconds, so it is now opt-in — pass `retryIf: (error) => true`. The README
+  says when that is worth doing.
+- The circuit breaker's reset timeout is now measured monotonically with a
+  `Stopwatch`, so a system clock change cannot shorten or extend the open
+  period. The doc comment promised this "in 0.2" and 0.2.1 still used the wall
+  clock. Passing `now` still switches to a wall clock of your choosing, which
+  is what a test wants; production no longer has one.
+
 ## 0.2.1
 
 - Declare the diagram in `pubspec.yaml` so pub.dev renders it on the package

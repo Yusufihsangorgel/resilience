@@ -1,4 +1,5 @@
 import 'backoff.dart';
+import 'circuit_breaker.dart';
 import 'policy.dart';
 
 /// Details about a failed attempt that is about to be retried.
@@ -52,7 +53,16 @@ final class Retry implements Policy {
   /// and defaults to no delay.
   ///
   /// [retryIf] decides whether an error is retried. When it returns false
-  /// the error is rethrown immediately. When null, every error is retried.
+  /// the error is rethrown immediately. When null, every error is retried
+  /// except [CircuitOpenException].
+  ///
+  /// That exception is excluded because retrying it cannot help. A breaker
+  /// throws it without calling the action at all, so a retry loop wrapped
+  /// around a breaker would spend its whole budget, and sleep through every
+  /// backoff delay, on calls that were never made — and hand the caller a
+  /// [CircuitOpenException] instead of the failure that actually opened the
+  /// circuit. Only time reopens a circuit. Supplying [retryIf] takes over
+  /// completely, including this decision.
   ///
   /// [onRetry] is called before each delay with a [RetryEvent] describing
   /// the failed attempt. It is not called for the final failed attempt.
@@ -90,7 +100,10 @@ final class Retry implements Policy {
         return await action();
       } catch (error, stackTrace) {
         final retryIf = _retryIf;
-        if (attempt >= maxAttempts || (retryIf != null && !retryIf(error))) {
+        final retryable = retryIf != null
+            ? retryIf(error)
+            : error is! CircuitOpenException;
+        if (attempt >= maxAttempts || !retryable) {
           rethrow;
         }
         final nextDelay = backoff.delay(attempt);

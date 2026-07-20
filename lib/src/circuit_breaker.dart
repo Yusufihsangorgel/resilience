@@ -53,9 +53,10 @@ final class CircuitOpenException implements Exception {
 /// inside the breaker so the trial always settles, as in the package
 /// example.
 ///
-/// The reset timeout is measured with the wall clock ([DateTime.now] by
-/// default), so system clock jumps can shorten or extend the open period.
-/// A monotonic time source is planned for 0.2.
+/// The reset timeout is measured monotonically, with a [Stopwatch], so a system
+/// clock change cannot shorten or extend the open period. Supplying [now]
+/// switches to that wall clock instead, which is what a test wants when it
+/// needs to drive the reset timeout deterministically.
 ///
 /// ```dart
 /// final breaker = CircuitBreaker(failureThreshold: 3);
@@ -77,8 +78,10 @@ final class CircuitBreaker implements Policy {
   /// The callback must not throw: an error thrown from it propagates to
   /// the caller in place of the call's own outcome.
   ///
-  /// [now] supplies the current time and defaults to [DateTime.now]. Pass
-  /// a fake clock in tests to control the reset timeout.
+  /// [now] replaces the monotonic default with a wall clock of your choosing.
+  /// Pass a fake clock in tests to control the reset timeout; leave it null in
+  /// production, where a [Stopwatch] measures the open period and no clock
+  /// change can disturb it.
   CircuitBreaker({
     this.failureThreshold = 5,
     this.resetTimeout = const Duration(seconds: 30),
@@ -87,7 +90,7 @@ final class CircuitBreaker implements Policy {
     DateTime Function()? now,
   }) : _countAs = countAs,
        _onStateChange = onStateChange,
-       _now = now ?? DateTime.now {
+       _now = now {
     if (failureThreshold < 1) {
       throw ArgumentError.value(
         failureThreshold,
@@ -112,12 +115,29 @@ final class CircuitBreaker implements Policy {
 
   final bool Function(Object error)? _countAs;
   final void Function(CircuitState state)? _onStateChange;
-  final DateTime Function() _now;
+  /// Null in production, where the open period is timed with [_openTimer].
+  final DateTime Function()? _now;
 
   CircuitState _state = CircuitState.closed;
   int _consecutiveFailures = 0;
+  /// When the breaker opened, on the injected wall clock. Null unless [_now]
+  /// was supplied.
   DateTime? _openedAt;
+
+  /// Time since the breaker opened, counted monotonically. Null unless the
+  /// breaker is open and no [_now] was supplied.
+  Stopwatch? _openTimer;
   bool _trialInFlight = false;
+
+  /// How long the breaker has been open, or null if it is not open.
+  Duration? _sinceOpen() {
+    final wallClock = _now;
+    if (wallClock != null) {
+      final openedAt = _openedAt;
+      return openedAt == null ? null : wallClock().difference(openedAt);
+    }
+    return _openTimer?.elapsed;
+  }
 
   /// The current state of the breaker.
   ///
@@ -149,7 +169,7 @@ final class CircuitBreaker implements Policy {
       case CircuitState.closed:
         return;
       case CircuitState.open:
-        final remaining = resetTimeout - _now().difference(_openedAt!);
+        final remaining = resetTimeout - _sinceOpen()!;
         if (remaining > Duration.zero) {
           throw CircuitOpenException(remaining);
         }
@@ -168,6 +188,7 @@ final class CircuitBreaker implements Policy {
       _trialInFlight = false;
       _consecutiveFailures = 0;
       _openedAt = null;
+      _openTimer = null;
       _transitionTo(CircuitState.closed);
     } else if (_state == CircuitState.closed) {
       _consecutiveFailures = 0;
@@ -196,7 +217,12 @@ final class CircuitBreaker implements Policy {
   }
 
   void _open() {
-    _openedAt = _now();
+    final wallClock = _now;
+    if (wallClock != null) {
+      _openedAt = wallClock();
+    } else {
+      _openTimer = Stopwatch()..start();
+    }
     _consecutiveFailures = 0;
     _transitionTo(CircuitState.open);
   }

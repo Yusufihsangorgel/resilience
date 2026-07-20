@@ -49,7 +49,7 @@ void main() {
     );
 
     test(
-      'a retry outside a circuit breaker retries the open rejection',
+      'a retry outside a circuit breaker stops when the breaker opens',
       () async {
         var calls = 0;
         final events = <RetryEvent>[];
@@ -67,13 +67,14 @@ void main() {
           throwsA(isA<CircuitOpenException>()),
         );
 
-        // The first attempt failed and opened the breaker; the remaining
-        // attempts were rejected without reaching the action.
+        // The first attempt failed and opened the breaker. The second was
+        // rejected without reaching the action, and the retry stopped there
+        // rather than spending its third attempt, and a backoff delay, on a
+        // call that would also never be made. Only time reopens a circuit.
         expect(calls, 1);
         expect(breaker.state, CircuitState.open);
-        expect(events, hasLength(2));
-        expect(events[0].error, isFormatException);
-        expect(events[1].error, isA<CircuitOpenException>());
+        expect(events, hasLength(1));
+        expect(events.single.error, isFormatException);
       },
     );
 
