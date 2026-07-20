@@ -30,7 +30,9 @@ Dart SDK.
 | `Timeout` | Fails the call when the action takes too long |
 | `RateLimiter` | Limits how often actions start, using a token bucket |
 | `Bulkhead` | Limits how many actions run concurrently |
+| `Hedge` | Starts a second copy of a slow call and takes the first to finish |
 | `ResiliencePipeline` | Composes any of the above into one policy |
+| `withFallback` | Returns a substitute value when everything above still failed |
 
 ## Install
 
@@ -159,6 +161,52 @@ final report = await bulkhead.execute(() => renderReport(id));
 A bulkhead keeps one slow dependency from soaking up every worker in the
 process: the dependency saturates its own slots and the rest of the app
 keeps running.
+
+## Hedging
+
+Retrying does not help a call that is merely slow: a retry only starts once the
+slow attempt has failed or timed out, and by then the latency is already spent.
+`Hedge` starts another attempt while the first is still in flight and takes
+whichever finishes first, which is what trims a p99 caused by one stalled
+connection or an unlucky pause.
+
+```dart
+final hedge = Hedge(delay: Duration(milliseconds: 200));
+final response = await hedge.execute(() => client.get(url));
+```
+
+The first attempt starts immediately; if it has not finished after `delay`,
+another starts alongside it, up to `maxAttempts`. A failed attempt brings the
+next one forward instead of waiting out the delay. Losers are ignored, though
+they do run to completion, since Dart cannot cancel a future.
+
+Only hedge what is safe to run twice. A hedged POST that creates an order can
+create two, so use it on reads or on writes an idempotency key makes safe. It
+also multiplies load on a backend that is slow because it is overloaded, so set
+`delay` near your p95 rather than your median.
+
+## Falling back
+
+The policies above decide how hard to try. `withFallback` decides what to show
+when trying did not work: the last cached response, an empty list, a default.
+
+```dart
+final pipeline = ResiliencePipeline([retry, breaker, timeout]);
+
+final rates = await withFallback(
+  pipeline,
+  () => api.fetchRates(),
+  fallback: (error, stackTrace) => cache.lastRates,
+  shouldHandle: (e) => e is! ArgumentError, // optional
+);
+```
+
+It is a function rather than a policy on purpose. A fallback swallows the
+error, so it belongs outside everything else: inside a retry, the retry sees a
+success and never runs again; inside a circuit breaker, the breaker never
+learns the call is failing. Taking the policy as an argument leaves the
+outermost position as the only one available, and keeps the substitute typed to
+the action's own result.
 
 ## Composing policies
 

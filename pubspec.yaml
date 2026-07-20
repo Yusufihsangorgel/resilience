@@ -3,7 +3,7 @@ description: >-
   Circuit breaker, bulkhead, retry with backoff, timeout, and rate limiter
   policies to keep Dart async calls resilient when a dependency fails or
   throttles. Zero dependencies.
-version: 0.1.2
+version: 0.2.0
 repository: https://github.com/Yusufihsangorgel/resilience
 issue_tracker: https://github.com/Yusufihsangorgel/resilience/issues
 topics:

@@ -9,6 +9,8 @@ library;
 export 'src/backoff.dart';
 export 'src/bulkhead.dart';
 export 'src/circuit_breaker.dart';
+export 'src/fallback.dart';
+export 'src/hedge.dart';
 export 'src/pipeline.dart';
 export 'src/policy.dart';
 export 'src/rate_limiter.dart';
