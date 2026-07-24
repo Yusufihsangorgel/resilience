@@ -1,3 +1,9 @@
+## 1.0.1
+
+- Add `example/README.md` for pub.dev's Example tab (it was empty). It walks a
+  `CircuitBreaker` through its full lifecycle — open, fail-fast, half-open,
+  closed — against a recovering dependency, with the real output. Docs only.
+
 ## 1.0.0
 
 First stable release. The public API is frozen: from here a breaking change
