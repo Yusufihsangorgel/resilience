@@ -1,3 +1,31 @@
+## 1.0.0
+
+First stable release. The public API is frozen: from here a breaking change
+will not land without a major-version bump.
+
+No code changes since 0.4.0. This release is the commitment, made after an
+adversarial review that ran the policies rather than reading them: a
+sync-throw sweep across all seven policies plus the pipeline and
+`withFallback` under `runZonedGuarded` (no escapes, no hangs), timer-leak
+accounting under `fake_async`, a 300-task bulkhead storm holding the
+concurrency ceiling, ten-way contention for the circuit breaker's half-open
+trial, and both pathological caveats in the docs executed to confirm they
+behave as documented.
+
+What the freeze commits to:
+
+- Every concrete policy is `final`. Composition, not inheritance, is the
+  extension path, and `ResiliencePipeline` is how policies combine.
+- `Policy` and `Backoff` stay open as single-method interfaces, so you can
+  write your own policy or backoff. Neither can gain a member in 1.x.
+- `Policy.execute` takes a `Future<T> Function()`. A synchronous throw from
+  the action is routed through the normal error path by every policy, so a
+  plain function wraps as `() async => ...` with nothing lost.
+- No type carries value equality: the policies are stateful service objects,
+  and `RetryEvent` is a callback payload holding a `StackTrace`.
+- Every export is named. Zero runtime dependencies; the public API uses only
+  SDK types.
+
 ## 0.4.0
 
 - Fix `Hedge` hanging on an action that throws synchronously. A hedged call
