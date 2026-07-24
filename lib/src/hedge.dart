@@ -41,7 +41,11 @@ final class Hedge implements Policy {
       throw ArgumentError.value(delay, 'delay', 'must not be negative');
     }
     if (maxAttempts < 1) {
-      throw ArgumentError.value(maxAttempts, 'maxAttempts', 'must be at least 1');
+      throw ArgumentError.value(
+        maxAttempts,
+        'maxAttempts',
+        'must be at least 1',
+      );
     }
   }
 
@@ -65,7 +69,12 @@ final class Hedge implements Policy {
     void startAttempt() {
       if (completer.isCompleted || started >= maxAttempts) return;
       started++;
-      action().then(
+      // Future.sync so an action that throws synchronously (before it returns
+      // a future) becomes an errored future routed through onError, the same
+      // as every other policy. Calling action() raw would let that throw
+      // escape the Timer callback as an unhandled zone error and leave the
+      // completer to hang forever.
+      Future.sync(action).then(
         (value) {
           settled++;
           if (completer.isCompleted) return;

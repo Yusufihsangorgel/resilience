@@ -115,11 +115,13 @@ final class CircuitBreaker implements Policy {
 
   final bool Function(Object error)? _countAs;
   final void Function(CircuitState state)? _onStateChange;
+
   /// Null in production, where the open period is timed with [_openTimer].
   final DateTime Function()? _now;
 
   CircuitState _state = CircuitState.closed;
   int _consecutiveFailures = 0;
+
   /// When the breaker opened, on the injected wall clock. Null unless [_now]
   /// was supplied.
   DateTime? _openedAt;

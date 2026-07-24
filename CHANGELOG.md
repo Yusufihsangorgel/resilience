@@ -1,3 +1,22 @@
+## 0.4.0
+
+- Fix `Hedge` hanging on an action that throws synchronously. A hedged call
+  runs the action from a `Timer` callback; if the action threw before it
+  returned a future — a closed `http.Client` does exactly this — the throw
+  escaped as an unhandled zone error and the returned future never completed,
+  so the caller awaited forever. Every other policy already routes a synchronous
+  throw through its normal error path; `Hedge` now does too, by invoking the
+  action with `Future.sync`. Regression tests cover an action that throws on
+  every attempt and one that throws only on the hedged attempt.
+- Name every export explicitly with a `show` clause. The library re-exported
+  whole source files, so a symbol that became public in one would have joined
+  the API by accident. The exported set is unchanged: `Backoff`, `Bulkhead`,
+  `BulkheadRejectedException`, `CircuitBreaker`, `CircuitOpenException`,
+  `CircuitState`, `Hedge`, `Policy`, `RateLimiter`, `RateLimitExceededException`,
+  `ResiliencePipeline`, `Retry`, `RetryEvent`, `Timeout`, and `withFallback`.
+- Repair the pub.dev screenshot caption, which a folded YAML line had split
+  mid-word into "CircuitBreake r".
+
 ## 0.3.0
 
 - **Behaviour change:** `Retry` no longer retries `CircuitOpenException` by

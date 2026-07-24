@@ -163,37 +163,39 @@ void main() {
   });
 
   group('Retry and CircuitBreaker composed', () {
-    test('a retry stops when the breaker opens instead of burning its budget',
-        () async {
-      // The canonical composition: a retry around a breaker. Once the breaker
-      // opens it throws without calling the action, so every further attempt
-      // is a delay paid for a call that was never made.
-      final breaker = CircuitBreaker(failureThreshold: 3);
-      final retries = <int>[];
-      final retry = Retry(
-        maxAttempts: 10,
-        onRetry: (event) => retries.add(event.attempt),
-      );
-      var calls = 0;
+    test(
+      'a retry stops when the breaker opens instead of burning its budget',
+      () async {
+        // The canonical composition: a retry around a breaker. Once the breaker
+        // opens it throws without calling the action, so every further attempt
+        // is a delay paid for a call that was never made.
+        final breaker = CircuitBreaker(failureThreshold: 3);
+        final retries = <int>[];
+        final retry = Retry(
+          maxAttempts: 10,
+          onRetry: (event) => retries.add(event.attempt),
+        );
+        var calls = 0;
 
-      await expectLater(
-        retry.execute(
-          () => breaker.execute(() async {
-            calls++;
-            throw StateError('upstream down');
-          }),
-        ),
-        // The breaker has the last word: it reports that it has stopped
-        // trying, and carries how long until it will try again.
-        throwsA(isA<CircuitOpenException>()),
-      );
+        await expectLater(
+          retry.execute(
+            () => breaker.execute(() async {
+              calls++;
+              throw StateError('upstream down');
+            }),
+          ),
+          // The breaker has the last word: it reports that it has stopped
+          // trying, and carries how long until it will try again.
+          throwsA(isA<CircuitOpenException>()),
+        );
 
-      // Three real calls opened the breaker. The fourth attempt was refused
-      // and ended the loop, so six of the ten attempts were never spent and
-      // six backoff delays were never slept through.
-      expect(calls, 3);
-      expect(retries, [1, 2, 3]);
-    });
+        // Three real calls opened the breaker. The fourth attempt was refused
+        // and ended the loop, so six of the ten attempts were never spent and
+        // six backoff delays were never slept through.
+        expect(calls, 3);
+        expect(retries, [1, 2, 3]);
+      },
+    );
 
     test('an explicit retryIf takes over the decision', () async {
       // Supplying retryIf means the caller owns the policy, including the
