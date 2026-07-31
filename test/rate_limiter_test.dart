@@ -265,5 +265,43 @@ void main() {
         throwsArgumentError,
       );
     });
+
+    test('holds the rate when a token is due more often than once a ms', () {
+      // A rate above 1000/s asks for a sub-millisecond refill interval, which
+      // Timer rounds down to zero: it then fired every event-loop turn and
+      // granted a token each time. 2002 calls at 1001/s finished in 10 ms of
+      // wall clock instead of the second they were paced for.
+      for (final permits in [1001, 5000]) {
+        fakeAsync((async) {
+          final limiter = RateLimiter(
+            maxPermits: permits,
+            per: const Duration(seconds: 1),
+          );
+          var started = 0;
+          for (var i = 0; i < permits * 2; i++) {
+            unawaited(limiter.execute(() async => started++));
+          }
+          async.flushMicrotasks();
+
+          // The full bucket covers the first half; the rest must wait.
+          expect(started, permits, reason: 'burst should be one bucket');
+
+          async.elapse(const Duration(milliseconds: 500));
+          expect(
+            started,
+            lessThan(permits * 2),
+            reason: 'half the refill period cannot cover a whole bucket',
+          );
+
+          async.elapse(const Duration(milliseconds: 500));
+          expect(
+            started,
+            permits * 2,
+            reason: 'one full period refills one full bucket',
+          );
+          limiter.dispose();
+        });
+      }
+    });
   });
 }

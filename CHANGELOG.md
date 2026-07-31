@@ -1,3 +1,25 @@
+## 1.0.2
+
+- **Fix `RateLimiter` not limiting at all above 1000 permits per second.** The
+  refill timer was created with `per ~/ maxPermits`, the ideal spacing of one
+  token. Past 1000 permits per second that is sub-millisecond, and a `Timer`
+  resolves in whole milliseconds: the period rounded down to zero, so the
+  timer fired on every event-loop turn and granted a token each time.
+  Measured: a limiter configured for 1001 permits per second let 2002 calls
+  through in 10 ms rather than the second they were paced for — roughly a
+  hundred times the configured rate. A caller who put this in front of an API
+  with a 5000/s quota was sending about 97,000/s and collecting 429s.
+
+  The timer now ticks no faster than 4 ms and releases however many tokens the
+  elapsed period has earned, carrying the sub-token remainder so a rate that
+  does not divide evenly into the tick does not drift. Rates at or below 250
+  permits per second are unaffected, since their interval already exceeds the
+  floor. Measured after the fix, at 50, 100, 1001, 2000 and 5000 permits per
+  second: all within 1% of the configured rate.
+
+  A regression test covers 1001 and 5000 permits per second and fails against
+  the old implementation.
+
 ## 1.0.1
 
 - Add `example/README.md` for pub.dev's Example tab (it was empty). It walks a

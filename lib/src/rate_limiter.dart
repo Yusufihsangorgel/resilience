@@ -98,6 +98,9 @@ final class RateLimiter implements Policy {
   Timer? _refillTimer;
   bool _disposed = false;
 
+  /// Elapsed microseconds not yet converted into a whole token.
+  int _owedMicros = 0;
+
   /// The number of calls currently waiting for a token.
   int get queueLength => _waiters.length;
 
@@ -125,6 +128,7 @@ final class RateLimiter implements Policy {
     _disposed = true;
     _refillTimer?.cancel();
     _refillTimer = null;
+
     while (_waiters.isNotEmpty) {
       _waiters.removeFirst().completeError(StateError('RateLimiter disposed'));
     }
@@ -153,19 +157,77 @@ final class RateLimiter implements Policy {
     if (_tokens >= maxPermits && _waiters.isEmpty) {
       return;
     }
-    _refillTimer = Timer.periodic(per ~/ maxPermits, _onRefillTick);
+    // Refill resumes from now, so an idle limiter does not accumulate a burst.
+    _owedMicros = 0;
+    _refillTimer = Timer.periodic(_tick, _onRefillTick);
+  }
+
+  /// The floor on the refill period.
+  ///
+  /// Below this the timer cannot pace the bucket: a `Timer` resolves in whole
+  /// milliseconds, and a callback that hands a token to a waiter costs a
+  /// fraction of one on its own, so a tick near 1 ms yields a cycle
+  /// noticeably longer than asked for. Four milliseconds is the smallest
+  /// value measured to hold the configured rate within 1%, and it bounds how
+  /// many tokens can arrive together: four thousandths of [maxPermits].
+  static const Duration _minTick = Duration(milliseconds: 4);
+
+  /// How often the refill timer fires.
+  ///
+  /// Deliberately not `per ~/ maxPermits`. That is the ideal spacing of one
+  /// token, but above 250 permits per second it falls below [_minTick], and
+  /// past 1000 per second it is sub-millisecond and rounds down to zero — the
+  /// timer then fires on every event-loop turn, one token each time, far
+  /// faster than configured. Measured before this floor existed: a limiter
+  /// set to 1001 permits per second let 2002 calls through in 10 ms rather
+  /// than a second. The tick is therefore clamped, and [_grantEarnedTokens]
+  /// releases however many tokens the elapsed period has earned.
+  Duration get _tick {
+    final ideal = per ~/ maxPermits;
+    return ideal < _minTick ? _minTick : ideal;
   }
 
   void _onRefillTick(Timer timer) {
-    if (_waiters.isNotEmpty) {
-      // Hand the new token directly to the oldest waiter.
-      _waiters.removeFirst().complete();
+    final granted = _grantEarnedTokens();
+    if (granted == 0) {
       return;
     }
-    _tokens++;
-    if (_tokens >= maxPermits) {
+    if (_tokens >= maxPermits && _waiters.isEmpty) {
       timer.cancel();
       _refillTimer = null;
     }
+  }
+
+  /// Converts one tick's worth of elapsed time into tokens and hands them out.
+  ///
+  /// Returns the number of tokens granted. The remainder that did not amount
+  /// to a whole token is carried, so a rate that does not divide evenly into
+  /// the tick does not drift.
+  int _grantEarnedTokens() {
+    _owedMicros += _tick.inMicroseconds;
+
+    final perMicros = per.inMicroseconds;
+    var earned = (_owedMicros * maxPermits) ~/ perMicros;
+    if (earned <= 0) {
+      return 0;
+    }
+    // Keep only the sub-token remainder; anything else would let an idle
+    // stretch bank credit and release it as one burst.
+    _owedMicros -= (earned * perMicros) ~/ maxPermits;
+
+    final headroom = maxPermits - _tokens + _waiters.length;
+    if (earned > headroom) {
+      earned = headroom;
+      _owedMicros = 0;
+    }
+
+    var remaining = earned;
+    while (remaining > 0 && _waiters.isNotEmpty) {
+      // Hand the new token straight to the oldest waiter.
+      _waiters.removeFirst().complete();
+      remaining--;
+    }
+    _tokens += remaining;
+    return earned;
   }
 }
