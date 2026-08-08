@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [main]
 
+  # Weekly, so SDK, dependency and runner-image drift shows up on its
+  # own rather than waiting for the next push.
+  schedule:
+    - cron: '15 6 * * 1'
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
