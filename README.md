@@ -62,7 +62,7 @@ final retry = Retry(
 final data = await retry.execute(() => fetchData());
 ```
 
-`maxAttempts` counts the first attempt, so `maxAttempts: 4` means one
+`maxAttempts` counts the first attempt: `maxAttempts: 4` means one
 initial call plus up to three retries. When `retryIf` is omitted, every
 error is retried except `CircuitOpenException` (see below). The last attempt
 rethrows the original error.
@@ -76,7 +76,7 @@ Backoff strategies:
   `[base * (1 - jitter), base]` so simultaneous clients do not retry in
   lockstep.
 
-`Backoff` is an interface, so a custom schedule is one small class away.
+`Backoff` is an interface; a custom schedule is one small class away.
 
 ## Circuit breaker
 
@@ -129,8 +129,8 @@ long the work runs. If the action holds a scarce resource, pair it with a
 
 A token bucket. The bucket holds `maxPermits` tokens and refills at a
 steady rate of `maxPermits` per `per` (one token every `per / maxPermits`).
-Each call consumes one token before starting, so a full bucket allows a
-short burst and sustained load proceeds at the refill rate.
+Each call consumes one token before starting. A full bucket allows a
+short burst; sustained load proceeds at the refill rate.
 
 ```dart
 final limiter = RateLimiter(
@@ -182,8 +182,8 @@ next one forward instead of waiting out the delay. Losers are ignored, though
 they do run to completion, since Dart cannot cancel a future.
 
 Only hedge what is safe to run twice. A hedged POST that creates an order can
-create two, so use it on reads or on writes an idempotency key makes safe. It
-also multiplies load on a backend that is slow because it is overloaded, so set
+create two. Use it on reads, or on writes an idempotency key makes safe. It
+also multiplies load on a backend that is slow because it is overloaded; set
 `delay` near your p95 rather than your median.
 
 ## Falling back
@@ -264,7 +264,7 @@ See `example/resilience_example.dart` for a complete program.
 The parts that involve randomness or time accept injectable seams:
 `Backoff.exponential` takes a `Random`, and `CircuitBreaker` takes a
 `now` function. Retry delays, rate limiter refills, and timeouts are
-driven by timers, so they work with `package:fake_async` out of the box.
+driven by timers and work with `package:fake_async` out of the box.
 
 ## Design notes
 

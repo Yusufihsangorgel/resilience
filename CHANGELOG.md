@@ -3,10 +3,10 @@
 - **Fix `RateLimiter` not limiting at all above 1000 permits per second.** The
   refill timer was created with `per ~/ maxPermits`, the ideal spacing of one
   token. Past 1000 permits per second that is sub-millisecond, and a `Timer`
-  resolves in whole milliseconds: the period rounded down to zero, so the
-  timer fired on every event-loop turn and granted a token each time.
+  resolves in whole milliseconds: the period rounded down to zero. The timer
+  fired on every event-loop turn and granted a token each time.
   Measured: a limiter configured for 1001 permits per second let 2002 calls
-  through in 10 ms rather than the second they were paced for — roughly a
+  through in 10 ms rather than the second they were paced for, roughly a
   hundred times the configured rate. A caller who put this in front of an API
   with a 5000/s quota was sending about 97,000/s and collecting 429s.
 
@@ -23,8 +23,8 @@
 ## 1.0.1
 
 - Add `example/README.md` for pub.dev's Example tab (it was empty). It walks a
-  `CircuitBreaker` through its full lifecycle — open, fail-fast, half-open,
-  closed — against a recovering dependency, with the real output. Docs only.
+  `CircuitBreaker` through its full lifecycle (open, fail-fast, half-open,
+  closed) against a recovering dependency, with the real output. Docs only.
 
 ## 1.0.0
 
@@ -44,10 +44,10 @@ What the freeze commits to:
 
 - Every concrete policy is `final`. Composition, not inheritance, is the
   extension path, and `ResiliencePipeline` is how policies combine.
-- `Policy` and `Backoff` stay open as single-method interfaces, so you can
-  write your own policy or backoff. Neither can gain a member in 1.x.
+- `Policy` and `Backoff` stay open as single-method interfaces for writing
+  your own policy or backoff. Neither can gain a member in 1.x.
 - `Policy.execute` takes a `Future<T> Function()`. A synchronous throw from
-  the action is routed through the normal error path by every policy, so a
+  the action is routed through the normal error path by every policy; a
   plain function wraps as `() async => ...` with nothing lost.
 - No type carries value equality: the policies are stateful service objects,
   and `RetryEvent` is a callback payload holding a `StackTrace`.
@@ -58,14 +58,14 @@ What the freeze commits to:
 
 - Fix `Hedge` hanging on an action that throws synchronously. A hedged call
   runs the action from a `Timer` callback; if the action threw before it
-  returned a future — a closed `http.Client` does exactly this — the throw
-  escaped as an unhandled zone error and the returned future never completed,
-  so the caller awaited forever. Every other policy already routes a synchronous
+  returned a future (a closed `http.Client` does exactly this), the throw
+  escaped as an unhandled zone error, the returned future never completed, and
+  the caller awaited forever. Every other policy already routes a synchronous
   throw through its normal error path; `Hedge` now does too, by invoking the
   action with `Future.sync`. Regression tests cover an action that throws on
   every attempt and one that throws only on the hedged attempt.
 - Name every export explicitly with a `show` clause. The library re-exported
-  whole source files, so a symbol that became public in one would have joined
+  whole source files; a symbol that became public in one would have joined
   the API by accident. The exported set is unchanged: `Backoff`, `Bulkhead`,
   `BulkheadRejectedException`, `CircuitBreaker`, `CircuitOpenException`,
   `CircuitState`, `Hedge`, `Policy`, `RateLimiter`, `RateLimitExceededException`,
@@ -84,7 +84,7 @@ What the freeze commits to:
   The old behaviour had one real use, which is why it was the default: if the
   backoff can outlast the breaker's `resetTimeout`, a later attempt arrives
   after the circuit is willing to half-open. That needs delays of tens of
-  seconds, so it is now opt-in — pass `retryIf: (error) => true`. The README
+  seconds, and it is now opt-in: pass `retryIf: (error) => true`. The README
   says when that is worth doing.
 - The circuit breaker's reset timeout is now measured monotonically with a
   `Stopwatch`, so a system clock change cannot shorten or extend the open
@@ -96,7 +96,7 @@ What the freeze commits to:
 
 - Declare the diagram in `pubspec.yaml` so pub.dev renders it on the package
   page. It was already in the repository and the README, but pub.dev shows only
-  what the `screenshots:` field points at, so the page opened with prose where
+  what the `screenshots:` field points at. The page opened with prose where
   the picture should have been.
 
 ## 0.2.0
@@ -112,8 +112,8 @@ What the freeze commits to:
   It is a function taking a policy rather than a policy itself: a fallback
   swallows the error, so inside a retry the retry would see success and never
   run again, and inside a circuit breaker the breaker would never learn the
-  call is failing. The outermost position is the only correct one, so it is the
-  only one the API offers, which also keeps the substitute typed to the
+  call is failing. The outermost position is the only correct one, and the only
+  one the API offers, which also keeps the substitute typed to the
   action's result.
 
 ## 0.1.2
