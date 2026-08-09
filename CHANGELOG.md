@@ -1,3 +1,9 @@
+## 1.0.3
+
+- The backoff section shows the jitter rather than describing it.
+  `tool/jitter_figure.dart` draws the delays the policy produces. Docs and
+  tooling only.
+
 ## 1.0.2
 
 - **Fix `RateLimiter` not limiting at all above 1000 permits per second.** The
