@@ -8,6 +8,37 @@ bulkhead policies for reliable async operations. Zero dependencies.
 ![A terminal run of the breaker example: two calls fail with 503, the breaker
 opens, and the calls after it fail fast without touching the network](https://raw.githubusercontent.com/Yusufihsangorgel/resilience/main/doc/demo.gif)
 
+## Why this instead of what you already have
+
+**Instead of `retry`.** It is the package you most likely already have, and its
+backoff is correct: `retry.dart:107` caps the exponent with
+`math.min(attempt, 31)` before `math.pow`, and the source says why. The
+difference here is scope, not correctness. That file is 188 lines and defines
+one class, `RetryOptions`, plus a top-level `retry()`. Nothing in it survives
+between calls, so there is no circuit breaker, bulkhead, or rate limiter to be
+had. If retrying is all you need, stay there.
+
+**Instead of polly_dart.** Six of the seven policies on each side are the same,
+and it computes its exponent without a cap: `retry_strategy.dart:236` calls
+`math.pow(2, attemptNumber).toInt()`, integer exponentiation on a 64-bit ring.
+Run `RetryStrategyOptions.infinite()` on its own defaults (1 s delay, 30 s
+`maxDelay`) and the delay first wraps negative at attempt 44 and is exactly
+`Duration.zero` from attempt 58 on. The `maxDelay` clamp at line 254 never
+fires, because zero is not greater than the cap, and line 263 returns without
+waiting. About 20 minutes into an outage — 1,201 seconds of accumulated delay
+by attempt 44 — the backoff stops backing off.
+
+## Reach for it when
+
+- A dependency is down and you want to stop calling it entirely for a while,
+  which needs state that outlives a single call.
+- One slow dependency must not consume every worker you have.
+- Many clients retry the same endpoint and you need jitter so they do not all
+  land in the same millisecond.
+
+Skip it if all you need is "try this three more times." Use `retry`: it is 188
+lines, it is correct, and it is already in most lockfiles.
+
 Network calls fail, dependencies slow down, and third-party APIs throttle.
 This package provides the standard answers to those problems as small,
 composable policy objects with one shared interface:
