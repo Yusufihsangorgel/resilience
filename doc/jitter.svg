@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980"
+     height="560" viewBox="0 0 980 560"
+     font-family="Menlo, monospace">
+<rect width="100%" height="100%" fill="#0B1220"/>
+<text x="48" y="46" font-size="21" font-weight="bold" fill="#E2E8F0">
+  200 clients fail at the same instant. Where do the retries land?
+</text>
+<text x="48" y="72" font-size="13" fill="#94A3B8">
+  Three jitter settings on one exponential schedule. Rows share a scale;
+  a bar counts retries per 25 ms.
+</text>
+<line x1="210.0" y1="100.0" x2="210.0" y2="480.0" stroke="#1E3A5F" stroke-width="1"/>
+<line x1="331.7" y1="100.0" x2="331.7" y2="480.0" stroke="#1E3A5F" stroke-width="1"/>
+<line x1="453.3" y1="100.0" x2="453.3" y2="480.0" stroke="#1E3A5F" stroke-width="1"/>
+<line x1="575.0" y1="100.0" x2="575.0" y2="480.0" stroke="#1E3A5F" stroke-width="1"/>
+<line x1="696.7" y1="100.0" x2="696.7" y2="480.0" stroke="#1E3A5F" stroke-width="1"/>
+<line x1="818.3" y1="100.0" x2="818.3" y2="480.0" stroke="#1E3A5F" stroke-width="1"/>
+<line x1="940.0" y1="100.0" x2="940.0" y2="480.0" stroke="#1E3A5F" stroke-width="1"/>
+
+<rect x="308.43" y="108.00" width="9.97" height="100.00" fill="#F87171"/>
+<rect x="503.10" y="108.00" width="9.97" height="100.00" fill="#F87171"/>
+<rect x="892.43" y="108.00" width="9.97" height="100.00" fill="#F87171"/>
+<line x1="210.0" y1="208.0" x2="940.0" y2="208.0" stroke="#274b73" stroke-width="1"/>
+<text x="202.0" y="117.0" text-anchor="end" font-size="10" fill="#475569">200</text>
+<text x="202.0" y="211.0" text-anchor="end" font-size="10" fill="#475569">0</text>
+<text x="48" y="152.0" font-size="15" font-weight="bold" fill="#F87171">jitter: 0</text>
+<text x="48" y="174.0" font-size="12.5" fill="#94A3B8">tallest bin 200</text>
+<text x="48" y="192.0" font-size="12.5" fill="#64748B">of 200 clients</text>
+<rect x="259.77" y="316.00" width="9.97" height="28.00" fill="#38BDF8"/>
+<rect x="271.93" y="317.00" width="9.97" height="27.00" fill="#38BDF8"/>
+<rect x="284.10" y="322.00" width="9.97" height="22.00" fill="#38BDF8"/>
+<rect x="296.27" y="321.00" width="9.97" height="23.00" fill="#38BDF8"/>
+<rect x="357.10" y="343.00" width="9.97" height="1.00" fill="#38BDF8"/>
+<rect x="369.27" y="340.50" width="9.97" height="3.50" fill="#38BDF8"/>
+<rect x="381.43" y="335.50" width="9.97" height="8.50" fill="#38BDF8"/>
+<rect x="393.60" y="336.00" width="9.97" height="8.00" fill="#38BDF8"/>
+<rect x="405.77" y="328.50" width="9.97" height="15.50" fill="#38BDF8"/>
+<rect x="417.93" y="329.00" width="9.97" height="15.00" fill="#38BDF8"/>
+<rect x="430.10" y="335.00" width="9.97" height="9.00" fill="#38BDF8"/>
+<rect x="442.27" y="330.00" width="9.97" height="14.00" fill="#38BDF8"/>
+<rect x="454.43" y="332.50" width="9.97" height="11.50" fill="#38BDF8"/>
+<rect x="466.60" y="336.50" width="9.97" height="7.50" fill="#38BDF8"/>
+<rect x="478.77" y="339.50" width="9.97" height="4.50" fill="#38BDF8"/>
+<rect x="490.93" y="342.00" width="9.97" height="2.00" fill="#38BDF8"/>
+<rect x="576.10" y="343.00" width="9.97" height="1.00" fill="#38BDF8"/>
+<rect x="588.27" y="342.50" width="9.97" height="1.50" fill="#38BDF8"/>
+<rect x="600.43" y="342.00" width="9.97" height="2.00" fill="#38BDF8"/>
+<rect x="612.60" y="340.00" width="9.97" height="4.00" fill="#38BDF8"/>
+<rect x="624.77" y="339.50" width="9.97" height="4.50" fill="#38BDF8"/>
+<rect x="636.93" y="340.50" width="9.97" height="3.50" fill="#38BDF8"/>
+<rect x="649.10" y="337.50" width="9.97" height="6.50" fill="#38BDF8"/>
+<rect x="661.27" y="338.50" width="9.97" height="5.50" fill="#38BDF8"/>
+<rect x="673.43" y="338.50" width="9.97" height="5.50" fill="#38BDF8"/>
+<rect x="685.60" y="334.50" width="9.97" height="9.50" fill="#38BDF8"/>
+<rect x="697.77" y="336.50" width="9.97" height="7.50" fill="#38BDF8"/>
+<rect x="709.93" y="339.50" width="9.97" height="4.50" fill="#38BDF8"/>
+<rect x="722.10" y="337.50" width="9.97" height="6.50" fill="#38BDF8"/>
+<rect x="734.27" y="340.00" width="9.97" height="4.00" fill="#38BDF8"/>
+<rect x="746.43" y="340.50" width="9.97" height="3.50" fill="#38BDF8"/>
+<rect x="758.60" y="337.50" width="9.97" height="6.50" fill="#38BDF8"/>
+<rect x="770.77" y="338.50" width="9.97" height="5.50" fill="#38BDF8"/>
+<rect x="782.93" y="338.00" width="9.97" height="6.00" fill="#38BDF8"/>
+<rect x="795.10" y="341.50" width="9.97" height="2.50" fill="#38BDF8"/>
+<rect x="807.27" y="340.50" width="9.97" height="3.50" fill="#38BDF8"/>
+<rect x="819.43" y="341.50" width="9.97" height="2.50" fill="#38BDF8"/>
+<rect x="831.60" y="342.00" width="9.97" height="2.00" fill="#38BDF8"/>
+<rect x="843.77" y="342.00" width="9.97" height="2.00" fill="#38BDF8"/>
+<line x1="210.0" y1="344.0" x2="940.0" y2="344.0" stroke="#274b73" stroke-width="1"/>
+<text x="202.0" y="253.0" text-anchor="end" font-size="10" fill="#475569">200</text>
+<text x="202.0" y="347.0" text-anchor="end" font-size="10" fill="#475569">0</text>
+<text x="48" y="288.0" font-size="15" font-weight="bold" fill="#38BDF8">jitter: 0.5</text>
+<text x="48" y="310.0" font-size="12.5" fill="#94A3B8">tallest bin 56</text>
+<text x="48" y="328.0" font-size="12.5" fill="#64748B">of 200 clients</text>
+<rect x="211.10" y="463.50" width="9.97" height="16.50" fill="#34D399"/>
+<rect x="223.27" y="467.50" width="9.97" height="12.50" fill="#34D399"/>
+<rect x="235.43" y="465.50" width="9.97" height="14.50" fill="#34D399"/>
+<rect x="247.60" y="464.00" width="9.97" height="16.00" fill="#34D399"/>
+<rect x="259.77" y="463.50" width="9.97" height="16.50" fill="#34D399"/>
+<rect x="271.93" y="465.00" width="9.97" height="15.00" fill="#34D399"/>
+<rect x="284.10" y="463.00" width="9.97" height="17.00" fill="#34D399"/>
+<rect x="296.27" y="464.50" width="9.97" height="15.50" fill="#34D399"/>
+<rect x="308.43" y="473.50" width="9.97" height="6.50" fill="#34D399"/>
+<rect x="320.60" y="469.00" width="9.97" height="11.00" fill="#34D399"/>
+<rect x="332.77" y="469.50" width="9.97" height="10.50" fill="#34D399"/>
+<rect x="344.93" y="471.50" width="9.97" height="8.50" fill="#34D399"/>
+<rect x="357.10" y="473.00" width="9.97" height="7.00" fill="#34D399"/>
+<rect x="369.27" y="473.50" width="9.97" height="6.50" fill="#34D399"/>
+<rect x="381.43" y="470.50" width="9.97" height="9.50" fill="#34D399"/>
+<rect x="393.60" y="472.00" width="9.97" height="8.00" fill="#34D399"/>
+<rect x="405.77" y="471.50" width="9.97" height="8.50" fill="#34D399"/>
+<rect x="417.93" y="470.50" width="9.97" height="9.50" fill="#34D399"/>
+<rect x="430.10" y="472.50" width="9.97" height="7.50" fill="#34D399"/>
+<rect x="442.27" y="474.50" width="9.97" height="5.50" fill="#34D399"/>
+<rect x="454.43" y="475.00" width="9.97" height="5.00" fill="#34D399"/>
+<rect x="466.60" y="475.00" width="9.97" height="5.00" fill="#34D399"/>
+<rect x="478.77" y="472.00" width="9.97" height="8.00" fill="#34D399"/>
+<rect x="490.93" y="476.50" width="9.97" height="3.50" fill="#34D399"/>
+<rect x="503.10" y="476.50" width="9.97" height="3.50" fill="#34D399"/>
+<rect x="515.27" y="476.00" width="9.97" height="4.00" fill="#34D399"/>
+<rect x="527.43" y="478.00" width="9.97" height="2.00" fill="#34D399"/>
+<rect x="539.60" y="477.50" width="9.97" height="2.50" fill="#34D399"/>
+<rect x="551.77" y="477.50" width="9.97" height="2.50" fill="#34D399"/>
+<rect x="563.93" y="476.00" width="9.97" height="4.00" fill="#34D399"/>
+<rect x="576.10" y="477.00" width="9.97" height="3.00" fill="#34D399"/>
+<rect x="588.27" y="479.00" width="9.97" height="1.00" fill="#34D399"/>
+<rect x="600.43" y="478.50" width="9.97" height="1.50" fill="#34D399"/>
+<rect x="612.60" y="478.00" width="9.97" height="2.00" fill="#34D399"/>
+<rect x="624.77" y="476.50" width="9.97" height="3.50" fill="#34D399"/>
+<rect x="636.93" y="477.00" width="9.97" height="3.00" fill="#34D399"/>
+<rect x="649.10" y="477.00" width="9.97" height="3.00" fill="#34D399"/>
+<rect x="661.27" y="477.50" width="9.97" height="2.50" fill="#34D399"/>
+<rect x="673.43" y="478.00" width="9.97" height="2.00" fill="#34D399"/>
+<rect x="685.60" y="476.00" width="9.97" height="4.00" fill="#34D399"/>
+<rect x="697.77" y="478.50" width="9.97" height="1.50" fill="#34D399"/>
+<rect x="709.93" y="479.00" width="9.97" height="1.00" fill="#34D399"/>
+<rect x="722.10" y="479.00" width="9.97" height="1.00" fill="#34D399"/>
+<rect x="734.27" y="477.50" width="9.97" height="2.50" fill="#34D399"/>
+<rect x="746.43" y="479.00" width="9.97" height="1.00" fill="#34D399"/>
+<rect x="758.60" y="478.50" width="9.97" height="1.50" fill="#34D399"/>
+<rect x="770.77" y="478.50" width="9.97" height="1.50" fill="#34D399"/>
+<rect x="782.93" y="479.00" width="9.97" height="1.00" fill="#34D399"/>
+<rect x="795.10" y="478.50" width="9.97" height="1.50" fill="#34D399"/>
+<rect x="807.27" y="479.00" width="9.97" height="1.00" fill="#34D399"/>
+<line x1="210.0" y1="480.0" x2="940.0" y2="480.0" stroke="#274b73" stroke-width="1"/>
+<text x="202.0" y="389.0" text-anchor="end" font-size="10" fill="#475569">200</text>
+<text x="202.0" y="483.0" text-anchor="end" font-size="10" fill="#475569">0</text>
+<text x="48" y="424.0" font-size="15" font-weight="bold" fill="#34D399">jitter: 1</text>
+<text x="48" y="446.0" font-size="12.5" fill="#94A3B8">tallest bin 34</text>
+<text x="48" y="464.0" font-size="12.5" fill="#64748B">of 200 clients</text>
+
+<text x="210.0" y="500.0" text-anchor="middle" font-size="12" fill="#64748B">0</text>
+<text x="331.7" y="500.0" text-anchor="middle" font-size="12" fill="#64748B">250</text>
+<text x="453.3" y="500.0" text-anchor="middle" font-size="12" fill="#64748B">500</text>
+<text x="575.0" y="500.0" text-anchor="middle" font-size="12" fill="#64748B">750</text>
+<text x="696.7" y="500.0" text-anchor="middle" font-size="12" fill="#64748B">1000</text>
+<text x="818.3" y="500.0" text-anchor="middle" font-size="12" fill="#64748B">1250</text>
+<text x="940.0" y="500.0" text-anchor="middle" font-size="12" fill="#64748B">1500</text>
+
+<text x="575.0" y="524.0"
+      text-anchor="middle" font-size="12" fill="#64748B">
+  milliseconds after the shared failure
+</text>
+<text x="48" y="546.0" font-size="11.5" fill="#475569">
+  Backoff.exponential(initial: 200 ms, factor: 2) under
+  Retry(maxAttempts: 4), one Random(7) shared by the fleet.
+</text>
+</svg>

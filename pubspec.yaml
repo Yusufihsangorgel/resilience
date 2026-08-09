@@ -15,6 +15,11 @@ topics:
 
 screenshots:
   - description: >-
+      Retry arrival times for 200 clients that failed together: without jitter
+      all 200 land in one 25 ms window, and jitter 0.5 cuts the busiest window
+      to 56.
+    path: doc/jitter.png
+  - description: >-
       Each policy wraps an async action and returns one, so Retry,
       CircuitBreaker, RateLimiter and Timeout nest in whatever order fits your
       action.

@@ -76,6 +76,16 @@ Backoff strategies:
   `[base * (1 - jitter), base]` so simultaneous clients do not retry in
   lockstep.
 
+![Three histograms of retry arrival times for 200 clients that failed at the same moment. With jitter off, all 200 retries land in a single 25 ms bin, three times over. At jitter 0.5 the busiest bin holds 56 retries, and at jitter 1 it holds 34.](https://raw.githubusercontent.com/Yusufihsangorgel/resilience/main/doc/jitter.png)
+
+Lockstep is the part worth seeing. Two hundred clients that failed together
+retry at 200 ms, 600 ms and 1400 ms on the dot once jitter is off, and the
+recovering dependency meets its whole caller base three times over. Half
+jitter drops the busiest 25 ms window to 56 callers, full jitter to 34.
+`dart run tool/jitter_figure.dart` redraws the figure from delays that
+`Backoff.exponential` returned, and refuses to write it when the peaks stop
+falling.
+
 `Backoff` is an interface; a custom schedule is one small class away.
 
 ## Circuit breaker
