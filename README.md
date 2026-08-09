@@ -5,6 +5,9 @@
 Retry with backoff and jitter, circuit breaker, timeout, rate limiter, and
 bulkhead policies for reliable async operations. Zero dependencies.
 
+![A terminal run of the breaker example: two calls fail with 503, the breaker
+opens, and the calls after it fail fast without touching the network](https://raw.githubusercontent.com/Yusufihsangorgel/resilience/main/doc/demo.gif)
+
 Network calls fail, dependencies slow down, and third-party APIs throttle.
 This package provides the standard answers to those problems as small,
 composable policy objects with one shared interface:

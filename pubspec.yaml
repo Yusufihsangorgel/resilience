@@ -3,7 +3,7 @@ description: >-
   Circuit breaker, bulkhead, retry with backoff, timeout, and rate limiter
   policies to keep Dart async calls resilient when a dependency fails or
   throttles. Zero dependencies.
-version: 1.0.3
+version: 1.0.4
 repository: https://github.com/Yusufihsangorgel/resilience
 issue_tracker: https://github.com/Yusufihsangorgel/resilience/issues
 topics:
@@ -14,6 +14,10 @@ topics:
   - fault-tolerance
 
 screenshots:
+  - description: >-
+      Two calls fail with 503, the breaker opens, and the calls after it fail
+      fast without touching the network.
+    path: doc/demo.gif
   - description: >-
       Retry arrival times for 200 clients that failed together: without jitter
       all 200 land in one 25 ms window, and jitter 0.5 cuts the busiest window
