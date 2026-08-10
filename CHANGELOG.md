@@ -1,3 +1,11 @@
+## 1.1.1
+
+- New `example/hedge_tail_latency.dart`. `Hedge` is the one policy here a retry
+  cannot stand in for, and the example directory named it in prose without ever
+  running it. A hundred requests against a service that stalls one in twenty:
+  p99 goes from 602 ms to 74 ms, the median does not move, and the cost is five
+  extra calls. Deterministic and offline.
+
 ## 1.1.0
 
 - The README now answers, in its first screen, why to reach for this rather

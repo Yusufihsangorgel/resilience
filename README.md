@@ -230,6 +230,20 @@ create two. Use it on reads, or on writes an idempotency key makes safe. It
 also multiplies load on a backend that is slow because it is overloaded; set
 `delay` near your p95 rather than your median.
 
+`dart run example/hedge_tail_latency.dart` puts a number on both halves of that
+trade. A hundred requests against a service where one in twenty stalls for
+600 ms:
+
+```
+                p50    p99    max   backend calls
+no policy     22 ms 602 ms 602 ms             100
+hedged        22 ms  74 ms  74 ms             105
+```
+
+The median does not move, because a fast call finishes long before the hedge
+would start and so it never starts. The tail loses 528 ms and the bill is five
+extra calls. Deterministic and offline, so those are the numbers you get too.
+
 ## Falling back
 
 The policies above decide how hard to try. `withFallback` decides what to show
