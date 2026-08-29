@@ -1,3 +1,18 @@
+## 1.1.2
+
+- A test now fails if `Timeout` starts to look like it cancels the action.
+  Dart cannot cancel a `Future`: when the deadline fires the caller gets a
+  `TimeoutException` and the work keeps running, side effects included. The
+  dartdoc already said so; the suite now proves the action actually continues
+  after the waiter has given up.
+- A test now fails if `Retry` quietly starts retrying `CircuitOpenException`
+  again. In the README pipeline — retry outside the breaker, timeout inside
+  it — an already-open circuit still fails fast and leaves the quiet period
+  intact. Passing `retryIf` that returns true for that exception remains the
+  documented opt-in. `ResiliencePipeline`'s dartdoc still described the 0.2
+  default, that a retry outside a breaker retries the breaker's own
+  rejections; it now matches the 0.3 behaviour.
+
 ## 1.1.1
 
 - New `example/hedge_tail_latency.dart`. `Hedge` is the one policy here a retry

@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:fake_async/fake_async.dart';
 import 'package:resilience/resilience.dart';
 import 'package:test/test.dart' hide Retry, Timeout;
 
@@ -77,6 +80,83 @@ void main() {
         expect(events.single.error, isFormatException);
       },
     );
+
+    test('the README pipeline does not retry an open circuit', () {
+      // Retry outside the breaker, Timeout inside it: the composition the
+      // README shows. The first call opens the breaker on real failures.
+      // The next call must fail fast on CircuitOpenException, without
+      // sleeping the backoff or touching the action; only time reopens a
+      // circuit. A retryIf that returned true for CircuitOpenException
+      // would spend the whole budget here and defeat that quiet period.
+      fakeAsync((async) {
+        var calls = 0;
+        final retried = <Object>[];
+        final breaker = CircuitBreaker(
+          failureThreshold: 3,
+          resetTimeout: const Duration(seconds: 30),
+        );
+        final pipeline = ResiliencePipeline([
+          Retry(
+            maxAttempts: 3,
+            backoff: const Backoff.fixed(Duration(milliseconds: 40)),
+            onRetry: (event) => retried.add(event.error),
+          ),
+          breaker,
+          const Timeout(Duration(milliseconds: 250)),
+        ]);
+
+        Future<Never> down() async {
+          calls++;
+          throw StateError('upstream down');
+        }
+
+        Object? firstError;
+        unawaited(
+          pipeline
+              .execute<void>(down)
+              .then<void>(
+                (_) {},
+                onError: (Object e) {
+                  firstError = e;
+                },
+              ),
+        );
+
+        async.flushMicrotasks();
+        expect(calls, 1);
+        async.elapse(const Duration(milliseconds: 40));
+        expect(calls, 2);
+        async.elapse(const Duration(milliseconds: 40));
+        expect(calls, 3);
+        expect(firstError, isA<StateError>());
+        expect(breaker.state, CircuitState.open);
+        expect(retried, hasLength(2));
+        expect(retried, everyElement(isA<StateError>()));
+
+        Object? secondError;
+        unawaited(
+          pipeline
+              .execute<void>(down)
+              .then<void>(
+                (_) {},
+                onError: (Object e) {
+                  secondError = e;
+                },
+              ),
+        );
+        async.flushMicrotasks();
+        expect(secondError, isA<CircuitOpenException>());
+        expect(calls, 3);
+        expect(retried, hasLength(2));
+
+        // Well past every backoff the retry would have slept if it had
+        // treated CircuitOpenException as retryable. Still no extra work.
+        async.elapse(const Duration(seconds: 5));
+        expect(calls, 3);
+        expect(retried, hasLength(2));
+        expect(breaker.state, CircuitState.open);
+      });
+    });
 
     test('a circuit breaker outside a retry counts one exhausted retry as '
         'one failure', () async {

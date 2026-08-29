@@ -70,6 +70,37 @@ void main() {
       });
     });
 
+    test('the action keeps running after the timeout fires', () {
+      fakeAsync((async) {
+        // Dart cannot cancel a Future. Timeout unblocks the waiter; the
+        // action still runs to completion and its side effects still happen.
+        const timeout = Timeout(Duration(milliseconds: 50));
+        var finished = false;
+        Object? error;
+        unawaited(
+          timeout
+              .execute(() async {
+                await Future<void>.delayed(const Duration(milliseconds: 120));
+                finished = true;
+                return 'done';
+              })
+              .then<void>(
+                (_) {},
+                onError: (Object e) {
+                  error = e;
+                },
+              ),
+        );
+
+        async.elapse(const Duration(milliseconds: 50));
+        expect(error, isA<TimeoutException>());
+        expect(finished, isFalse);
+
+        async.elapse(const Duration(milliseconds: 70));
+        expect(finished, isTrue);
+      });
+    });
+
     test('propagates the action error when it fails in time', () {
       fakeAsync((async) {
         const timeout = Timeout(Duration(seconds: 1));

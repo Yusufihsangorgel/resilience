@@ -14,9 +14,11 @@ import 'policy.dart';
 /// retry.execute(() => breaker.execute(() => timeout.execute(action)));
 /// ```
 ///
-/// Order matters. With a retry outside a circuit breaker, the retry also
-/// retries the breaker's own rejections. With the breaker outside, one
-/// exhausted retry counts as a single failure toward opening the circuit.
+/// Order matters. With a retry outside a circuit breaker, a default
+/// `Retry` stops when the breaker opens: `CircuitOpenException` is not
+/// retried, because retrying it cannot help and would spend the budget on
+/// calls that are never made. With the breaker outside, one exhausted
+/// retry counts as a single failure toward opening the circuit.
 ///
 /// A pipeline is itself a [Policy], so pipelines can be nested.
 final class ResiliencePipeline implements Policy {

@@ -46,6 +46,19 @@ void main() {
       expect(calls, 3);
     });
 
+    test('does not retry CircuitOpenException by default', () async {
+      var calls = 0;
+      final retry = Retry(maxAttempts: 5);
+      await expectLater(
+        retry.execute<void>(() async {
+          calls++;
+          throw const CircuitOpenException(Duration(seconds: 30));
+        }),
+        throwsA(isA<CircuitOpenException>()),
+      );
+      expect(calls, 1);
+    });
+
     test('does not retry when retryIf returns false', () async {
       var calls = 0;
       final retry = Retry(retryIf: (error) => error is FormatException);
