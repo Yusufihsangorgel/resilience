@@ -1,0 +1,18 @@
+# resilience
+
+Circuit breaker, bulkhead, retry with backoff, timeout, and rate limiter policies to keep Dart async calls resilient when a dependency fails or throttles. Zero dependencies.
+
+pub.dev: https://pub.dev/packages/resilience
+source: https://github.com/Yusufihsangorgel/resilience
+
+## Before you call it
+
+AGENTS.md in the repository root is written for you. It carries the contracts that are easy to get wrong — what must be awaited or disposed, what throws and when, and the mistakes whose symptom is silence rather than an error — along with the shortest correct usage taken from a runnable example.
+
+It also says when NOT to reach for this package. Read that part before adding the dependency.
+
+## Layout
+
+- `lib/` — public API
+- `example/` — runnable examples
+- `test/` — the suite; `dart test` (or `flutter test`) runs it
