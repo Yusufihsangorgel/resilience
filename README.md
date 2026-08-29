@@ -74,6 +74,10 @@ Dart SDK.
 dart pub add resilience
 ```
 
+To wrap `dart:io` `HttpClient` (or dio) rather than assemble policies
+from scratch, see [Wrapping an HTTP client](#wrapping-an-http-client)
+and `example/http_recipes.dart`.
+
 ## Retry
 
 ```dart
@@ -316,6 +320,83 @@ opening the circuit unless `countAs` filters it out.
 
 A pipeline is itself a `Policy`, so pipelines can be nested and shared.
 See `example/resilience_example.dart` for a complete program.
+
+## Wrapping an HTTP client
+
+The policies above are not an HTTP client. They wrap the one you already
+have. `dart:io` `HttpClient` does not throw on a 503; it returns a
+response. Retry and the breaker only see exceptions, so the wrapper has
+to throw:
+
+```dart
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:resilience/resilience.dart';
+
+final client = HttpClient();
+final breaker = CircuitBreaker(
+  failureThreshold: 5,
+  resetTimeout: Duration(seconds: 30),
+);
+final pipeline = ResiliencePipeline([
+  Retry(maxAttempts: 3, backoff: Backoff.exponential(jitter: 0.5)),
+  breaker,
+  Timeout(Duration(seconds: 2)),
+]);
+
+Future<String> get(Uri url) {
+  return pipeline.execute(() async {
+    final request = await client.getUrl(url);
+    final response = await request.close();
+    final body = await utf8.decodeStream(response);
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw HttpException('${response.statusCode} from ${url.path}');
+    }
+    return body;
+  });
+}
+```
+
+`client` and `breaker` are constructed once, next to each other, not
+inside `get`. Constructing the breaker per request resets the failure
+count on every call, so the breaker never opens and you keep hitting a
+dependency that is down. The same is true of `RateLimiter` and
+`Bulkhead`: a new instance per request is a full bucket and a free slot.
+
+`dart run example/http_recipes.dart` starts a local `HttpServer` that
+503s on a script and then recovers. One scene retries until the server
+answers; the next keeps the server down so the breaker opens and the
+caller sees `CircuitOpenException` without another HTTP call. Nothing
+leaves the process.
+
+### dio (not compiled)
+
+This package does not depend on dio. The shape is the same. Default dio
+already throws `DioException` on a non-2xx, so you do not translate
+status codes yourself. If you set `validateStatus` to accept those, you
+have to throw, the same as `HttpClient`.
+
+The block below is a sketch. It is not compiled; copy it into an app
+that already depends on dio.
+
+```dart
+// Not compiled. This package does not depend on dio.
+//
+// final dio = Dio();
+// final breaker = CircuitBreaker(failureThreshold: 5);
+// final pipeline = ResiliencePipeline([
+//   Retry(maxAttempts: 3, backoff: Backoff.exponential(jitter: 0.5)),
+//   breaker,
+//   const Timeout(Duration(seconds: 2)),
+// ]);
+//
+// Future<Response<T>> get<T>(String path) {
+//   return pipeline.execute(() => dio.get<T>(path));
+// }
+```
+
+The same rule applies: `breaker` lives next to `dio`, not inside `get`.
 
 ## Testability
 

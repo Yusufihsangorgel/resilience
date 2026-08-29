@@ -1,3 +1,19 @@
+## 1.1.3
+
+- New `example/http_recipes.dart`. The question this package exists to
+  answer is "make this API call resilient", and the answer a reader needs
+  is not another policy abstraction — it is the ten lines that wrap the
+  `HttpClient` they already have. The example starts a local `HttpServer`
+  that 503s on a script and then recovers, so the retry and the breaker
+  can be watched without a network. One scene retries until the server
+  answers; the next keeps the server down so the breaker opens and the
+  caller gets `CircuitOpenException` without another HTTP call.
+  Constructing the breaker inside the function it protects is the way
+  this wrapping goes wrong: the failure count resets on every call and
+  the breaker never opens. The README now shows that wiring for
+  `dart:io`, and the same shape for dio as a sketch that is not compiled
+  — this package does not depend on dio.
+
 ## 1.1.2
 
 - A test now fails if `Timeout` starts to look like it cancels the action.

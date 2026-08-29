@@ -42,3 +42,39 @@ A dependency is down. The breaker opens, then it recovers.
 The breaker is one of the policies in the package; `Retry`, `Timeout`,
 `RateLimiter`, `Bulkhead` and `Hedge` compose with it through a
 `ResiliencePipeline`. See the package README for combining them.
+
+To wrap `dart:io` `HttpClient` — policies constructed once, the call
+wrapped, a local server that 503s on a script so retry and the breaker
+can be watched without a network — run:
+
+```
+dart run example/http_recipes.dart
+```
+
+Output:
+
+```
+Wrapping dart:io HttpClient. Policies live on ResilientClient,
+created once. Constructing the breaker inside get() resets it on
+every call; consecutive failures never accumulate and it never opens.
+
+a. the server 503s twice, then 200s; retry recovers
+   server  GET /recover  -> 503
+   attempt 1 failed (HttpException: 503 from /recover), next in 40 ms
+   server  GET /recover  -> 503
+   attempt 2 failed (HttpException: 503 from /recover), next in 40 ms
+   server  GET /recover  -> 200
+   ok: {"ok":true}
+   3 hits, circuit closed
+
+b. the server stays down; the breaker opens
+   server  GET /down  -> 503
+   attempt 1 failed (HttpException: 503 from /down), next in 40 ms
+   server  GET /down  -> 503
+   attempt 2 failed (HttpException: 503 from /down), next in 40 ms
+   server  GET /down  -> 503
+   breaker -> open
+   request 1 gave up after 3 hits: HttpException: 503 from /down
+   request 2 cost 0 hits: CircuitOpenException (failed fast, no HTTP call)
+   only time reopens a circuit, and the default retryIf knows it
+```
