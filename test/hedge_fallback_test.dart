@@ -156,9 +156,8 @@ void main() {
                 .execute<int>(() {
                   call++;
                   if (call == 1) {
-                    return Future<int>.delayed(
-                      const Duration(milliseconds: 30),
-                    ).then((_) => throw StateError('slow-fail'));
+                    return Future<int>.delayed(const Duration(milliseconds: 30))
+                        .then((_) => throw StateError('slow-fail'));
                   }
                   throw StateError('sync-hedge');
                 })
@@ -171,24 +170,21 @@ void main() {
       },
     );
 
-    test(
-      'a slow attempt still failing after the hedge does not end it early',
-      () async {
-        final action = ControlledAction();
-        final hedge = Hedge(delay: const Duration(milliseconds: 20));
-        final result = hedge.execute(action.call);
+    test('a slow attempt still failing after the hedge does not end it early', () async {
+      final action = ControlledAction();
+      final hedge = Hedge(delay: const Duration(milliseconds: 20));
+      final result = hedge.execute(action.call);
 
-        await Future<void>.delayed(const Duration(milliseconds: 50));
-        expect(action.started, 2);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(action.started, 2);
 
-        // The hedge fails; the original is still running, so nothing is decided.
-        action.attempts[1].completeError(StateError('hedge failed'));
-        await Future<void>.delayed(const Duration(milliseconds: 20));
+      // The hedge fails; the original is still running, so nothing is decided.
+      action.attempts[1].completeError(StateError('hedge failed'));
+      await Future<void>.delayed(const Duration(milliseconds: 20));
 
-        action.attempts.first.complete('original recovered');
-        expect(await result, 'original recovered');
-      },
-    );
+      action.attempts.first.complete('original recovered');
+      expect(await result, 'original recovered');
+    });
 
     test('maxAttempts caps how many run', () async {
       final action = ControlledAction();
