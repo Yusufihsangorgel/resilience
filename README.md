@@ -55,6 +55,19 @@ Every policy wraps an async action. Policies compose through
 `ResiliencePipeline`, and the whole package has no dependencies outside the
 Dart SDK.
 
+## Pick a policy by symptom
+
+| You see | Reach for | Why | README section |
+| --- | --- | --- | --- |
+| Many clients retry the same endpoint at once | `Retry` with jitter | Jitter keeps the retries from landing in the same millisecond | [Retry](#retry) |
+| A dependency is down and you want to stop calling it for a while | `CircuitBreaker` | Fails fast after repeated failures while the dependency recovers | [Circuit breaker](#circuit-breaker) |
+| An action takes longer than the caller should wait | `Timeout` | Fails the call when the action takes too long | [Timeout](#timeout) |
+| A third-party API throttles your calls | `RateLimiter` | Limits how often actions start, using a token bucket | [Rate limiter](#rate-limiter) |
+| One slow dependency ties up every worker you have | `Bulkhead` | Caps concurrent calls; extra calls queue up to a limit, then fail | [Bulkhead](#bulkhead) |
+| A p99 caused by one stalled connection or an unlucky pause | `Hedge` | Starts a second attempt and takes whichever finishes first | [Hedging](#hedging) |
+| You need several of these on one call | `ResiliencePipeline` | Composes any of the above into one policy | [Composing policies](#composing-policies) |
+| Everything above still failed and you need a value | `withFallback` | Returns a substitute value | [Falling back](#falling-back) |
+
 ## Policies
 
 | Policy | What it does |
