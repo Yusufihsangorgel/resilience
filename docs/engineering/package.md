@@ -1,6 +1,6 @@
 # Package engineering rules: resilience
 
-Rules-Version: resilience/ea67b96f73cf24a63bcc733a4c40b24025d60f1f44044e4fb8cb855cef14e33c
+Rules-Version: resilience/ae95f5fb3aa796eadf5e0a053d5ec02e29081f90debda717699f0e2212f13203
 Core-Version: 1
 Core-Digest: 1825fa7ff346dca23e65b1b3bf9b2e3e06959f1414bae9952d596d2f62f09b8f
 Survey-Digest: f90f45c8a172068c3ed3b9488ba5a7cb4e58efa93c380d2d9a70b399349ec35e
@@ -89,7 +89,7 @@ Existing violation: none
 ### resilience/RES-8 [MUST]
 Keep the analyzer settings: strict casts, strict inference, strict raw types, `public_member_api_docs` and `unawaited_futures`. Document every public member and add no `// ignore:` comments.
 Reason: The package's current quality baseline; 0 ignores today. Shared D2 DOC-PUBLIC is already enforced by the analyzer.
-Evidence: analysis_options.yaml:1-15; lib/test/example/tool grep: 0 ignore
+Evidence: analysis_options.yaml:1-14; no `// ignore:` directive under lib/, test/, example/ or tool/
 Evidence role: current-pattern
 Existing violation: none
 
