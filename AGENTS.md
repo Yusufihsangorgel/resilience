@@ -67,3 +67,7 @@ final body = await pipeline.execute(() => api.get('/users/42'));
 - Tests: `test/` — `dart test`
 - Examples: `dart run example/breaker_demo.dart`, `dart run example/resilience_example.dart`, `dart run example/hedge_tail_latency.dart`
 - Analyze: `dart analyze`
+
+## Contributing
+
+Before changing this repository, read [CONTRIBUTING.md](CONTRIBUTING.md), [package engineering rules](docs/engineering/package.md), and the [debt register](docs/engineering/debt.json). These requirements apply to every contributor. The usage guidance above remains the consumer contract.

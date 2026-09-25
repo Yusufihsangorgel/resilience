@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "package": "resilience",
+  "survey_digest": "f90f45c8a172068c3ed3b9488ba5a7cb4e58efa93c380d2d9a70b399349ec35e",
+  "items": [
+    {
+      "id": "resilience-D001",
+      "source_index": 1,
+      "source_item_digest": "361ade159751ba1eaef9f86d0c29253dd91ef27a9e404393515d916568d6b6ed",
+      "baseline_revision": "388cda4",
+      "status": "open",
+      "size": "medium",
+      "locations": [
+        {
+          "path": "test/hedge_fallback_test.dart",
+          "lines": "37,49,62,69,81,97,181,186,201,265"
+        }
+      ],
+      "kind": "time-dependent test (flake risk)",
+      "observation": "The 18-test file does not use fakeAsync; it verifies that the hedge delay triggers with real 5-120 ms sleeps (about a 2x margin). Four sibling files use fake_async. Ordering can slip on a slow CI runner; flake frequency was not measured.",
+      "certainty": "probable",
+      "proposed_fix": "Rewrite the tests with `fakeAsync((async) { ... async.elapse(...) })`; keep the Completer-controlled `ControlledAction`.",
+      "related_rule_ids": [
+        "resilience/RES-9"
+      ],
+      "issue_url": null,
+      "closure_criteria": "Every timing assertion in hedge_fallback_test runs inside fakeAsync with async.elapse and keeps the Completer-driven ControlledAction. The file contains no wall-clock sleep and the full file passes.",
+      "review_trigger": "Before modifying the affected code",
+      "resolution": null
+    },
+    {
+      "id": "resilience-D002",
+      "source_index": 2,
+      "source_item_digest": "cd01bf9d40c5ba1386dcb82e9fd16daee92d2c0e3de490bfd367e4d1830f7906",
+      "baseline_revision": "388cda4",
+      "status": "open",
+      "size": "small",
+      "locations": [
+        {
+          "path": "lib/src/rate_limiter.dart",
+          "lines": "110,133"
+        }
+      ],
+      "kind": "duplication",
+      "observation": "The 'RateLimiter disposed' StateError message is repeated in two places.",
+      "certainty": "confirmed",
+      "proposed_fix": "A single private helper (`StateError _disposedError()`) or a constant message.",
+      "related_rule_ids": [
+        "resilience/RES-4"
+      ],
+      "issue_url": null,
+      "closure_criteria": "rate_limiter.dart builds the disposed StateError in one private helper or one constant message. rate_limiter_test still passes.",
+      "review_trigger": "Before modifying the affected code",
+      "resolution": null
+    }
+  ]
+}
