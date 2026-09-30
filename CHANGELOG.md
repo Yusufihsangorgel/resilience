@@ -1,3 +1,13 @@
+## 1.1.4
+
+- README: removed the comparison with other packages, which the repository
+  cannot back. A short scope note replaces it.
+- README: `Hedge` is described as taking the first successful result, and
+  throwing the last error when every attempt fails.
+- README: the architecture diagram no longer splits a sentence in two.
+- README: the hedging numbers now say the millisecond figures vary between
+  runs.
+
 ## 1.1.3
 
 - New `example/http_recipes.dart`. The question this package exists to

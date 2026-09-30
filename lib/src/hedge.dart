@@ -9,8 +9,8 @@ import 'policy.dart';
 /// rescheduled. Retrying does not help, because a retry only starts after the
 /// slow attempt has failed or timed out, by which point the latency is already
 /// spent. Hedging starts another attempt while the first is still in flight and
-/// takes whichever finishes first, which cuts the tail without waiting for
-/// anything to fail.
+/// takes the first success, which cuts the tail without waiting for anything
+/// to fail.
 ///
 /// ```dart
 /// final hedge = Hedge(delay: Duration(milliseconds: 200));

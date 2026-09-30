@@ -8,25 +8,12 @@ bulkhead policies for reliable async operations. Zero dependencies.
 ![A terminal run of the breaker example: two calls fail with 503, the breaker
 opens, and the calls after it fail fast without touching the network](https://raw.githubusercontent.com/Yusufihsangorgel/resilience/main/doc/demo.gif)
 
-## Why this instead of what you already have
+## Scope
 
-**Instead of `retry`.** It is the package you most likely already have, and its
-backoff is correct: `retry.dart:107` caps the exponent with
-`math.min(attempt, 31)` before `math.pow`, and the source says why. The
-difference here is scope, not correctness. That file is 188 lines and defines
-one class, `RetryOptions`, plus a top-level `retry()`. Nothing in it survives
-between calls, so there is no circuit breaker, bulkhead, or rate limiter to be
-had. If retrying is all you need, stay there.
-
-**Instead of polly_dart.** Six of the seven policies on each side are the same,
-and it computes its exponent without a cap: `retry_strategy.dart:236` calls
-`math.pow(2, attemptNumber).toInt()`, integer exponentiation on a 64-bit ring.
-Run `RetryStrategyOptions.infinite()` on its own defaults (1 s delay, 30 s
-`maxDelay`) and the delay first wraps negative at attempt 44 and is exactly
-`Duration.zero` from attempt 58 on. The `maxDelay` clamp at line 254 never
-fires, because zero is not greater than the cap, and line 263 returns without
-waiting. About 20 minutes into an outage — 1,201 seconds of accumulated delay
-by attempt 44 — the backoff stops backing off.
+The package includes retry, circuit breaking, timeout, rate limiting,
+bulkheads, hedging, and fallback handling. The circuit breaker, rate limiter,
+and bulkhead keep state between calls. Create one instance per protected
+resource and share it.
 
 ## Reach for it when
 
@@ -36,8 +23,8 @@ by attempt 44 — the backoff stops backing off.
 - Many clients retry the same endpoint and you need jitter so they do not all
   land in the same millisecond.
 
-Skip it if all you need is "try this three more times." Use `retry`: it is 188
-lines, it is correct, and it is already in most lockfiles.
+Skip it if all you need is "try this three more times." A small retry helper
+is enough for that.
 
 Network calls fail, dependencies slow down, and third-party APIs throttle.
 This package provides the standard answers to those problems as small,
@@ -50,10 +37,10 @@ abstract interface class Policy {
 ```
 
 Every policy wraps an async action. Policies compose through
-
-![Policies wrap the action, composing as nested layers](https://raw.githubusercontent.com/Yusufihsangorgel/resilience/main/doc/architecture.png)
 `ResiliencePipeline`, and the whole package has no dependencies outside the
 Dart SDK.
+
+![Policies wrap the action, composing as nested layers](https://raw.githubusercontent.com/Yusufihsangorgel/resilience/main/doc/architecture.png)
 
 ## Policies
 
@@ -64,7 +51,7 @@ Dart SDK.
 | `Timeout` | Fails the call when the action takes too long |
 | `RateLimiter` | Limits how often actions start, using a token bucket |
 | `Bulkhead` | Limits how many actions run concurrently |
-| `Hedge` | Starts a second copy of a slow call and takes the first to finish |
+| `Hedge` | Starts a second copy of a slow call and takes the first success |
 | `ResiliencePipeline` | Composes any of the above into one policy |
 | `withFallback` | Returns a substitute value when everything above still failed |
 
@@ -216,8 +203,9 @@ keeps running.
 Retrying does not help a call that is merely slow: a retry only starts once the
 slow attempt has failed or timed out, and by then the latency is already spent.
 `Hedge` starts another attempt while the first is still in flight and takes
-whichever finishes first, which is what trims a p99 caused by one stalled
-connection or an unlucky pause.
+the first one that succeeds, which is what trims a p99 caused by one stalled
+connection or an unlucky pause. If every attempt fails, it throws the last
+error.
 
 ```dart
 final hedge = Hedge(delay: Duration(milliseconds: 200));
@@ -246,7 +234,9 @@ hedged        22 ms  74 ms  74 ms             105
 
 The median does not move, because a fast call finishes long before the hedge
 would start and so it never starts. The tail loses 528 ms and the bill is five
-extra calls. Deterministic and offline, so those are the numbers you get too.
+extra calls. The backend is fake and offline, and the call counts are fixed by
+the script. The millisecond figures come from real timers and will shift a
+little between runs.
 
 ## Falling back
 
