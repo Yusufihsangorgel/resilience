@@ -15,17 +15,6 @@ bulkheads, hedging, and fallback handling. The circuit breaker, rate limiter,
 and bulkhead keep state between calls. Create one instance per protected
 resource and share it.
 
-## Reach for it when
-
-- A dependency is down and you want to stop calling it entirely for a while,
-  which needs state that outlives a single call.
-- One slow dependency must not consume every worker you have.
-- Many clients retry the same endpoint and you need jitter so they do not all
-  land in the same millisecond.
-
-Skip it if all you need is "try this three more times." A small retry helper
-is enough for that.
-
 Network calls fail, dependencies slow down, and third-party APIs throttle.
 This package provides the standard answers to those problems as small,
 composable policy objects with one shared interface:
@@ -41,6 +30,35 @@ Every policy wraps an async action. Policies compose through
 Dart SDK.
 
 ![Policies wrap the action, composing as nested layers](https://raw.githubusercontent.com/Yusufihsangorgel/resilience/main/doc/architecture.png)
+
+## Reach for it when
+
+- A dependency is down and you want to stop calling it entirely for a while,
+  which needs state that outlives a single call.
+- One slow dependency must not consume every worker you have.
+- Many callers in one isolate hit the same endpoint and you need to cap how
+  often calls start. One shared `RateLimiter` queues them in a token bucket.
+
+### Compared with `package:retry`
+
+[`package:retry`](https://pub.dev/packages/retry) (3.1.2 at the time of
+writing) is a retry helper and nothing else: its `lib/` holds one file with
+the `retry` function and `RetryOptions`.
+
+- Use `package:retry` when one retried call is all you need. It is a single
+  function call, and its defaults already back off exponentially with 25%
+  randomization over 8 attempts. `Retry` here defaults to 3 attempts with no
+  delay until you pass a `Backoff`.
+- Use `package:retry` when your `retryIf` or `onRetry` has to be async. Its
+  callbacks may return a `Future`. The ones here are synchronous.
+- Use this package when the same call also needs a `CircuitBreaker`,
+  `RateLimiter`, `Bulkhead`, `Hedge`, `Timeout`, or `withFallback`.
+  `package:retry` has none of them. These policies compose in one
+  `ResiliencePipeline`, and `withFallback` wraps a pipeline.
+- Check the default rule for what gets retried. Without `retryIf`,
+  `package:retry` retries any `Exception` and leaves an `Error` alone. `Retry`
+  here retries every error except `CircuitOpenException`, `StateError`
+  included. Pass `retryIf` in either package to narrow it.
 
 ## Policies
 

@@ -1,7 +1,8 @@
 ## 1.1.4
 
-- README: removed the comparison with other packages, which the repository
-  cannot back. A short scope note replaces it.
+- README: the comparison with other packages is replaced by a short, sourced
+  comparison with `package:retry`, covering when it is the better choice and
+  when this package is. A short scope note sits above it.
 - README: `Hedge` is described as taking the first successful result, and
   throwing the last error when every attempt fails.
 - README: the architecture diagram no longer splits a sentence in two.
